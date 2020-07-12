@@ -64,10 +64,21 @@ class Player extends Base{
         this.ready = false;
         this.rank = -1; // -1 means this player has not finished playing. otherwise it is the rank of the player.
         this._cards = [];
+        this._eventemitter = new EventEmitter();
+        this.onReadyChanged = () => {};
+        this._eventemitter.on('ready-changed', this.onReadyChanged);
     }
 
     get cards(){
         return [...this._cards]; // copy of cards
+    }
+
+    set ready(state){
+        if (!typeof state === 'boolean'){
+            throw 'Ready state should be boolean'
+        }
+        this.ready = state;
+        this._eventemitter.emit('ready-changed', state);
     }
 
     giveCard(card){
@@ -117,11 +128,22 @@ class GameRoom extends Base {
         this.SEVEN_CARD_PENALTY = 2;
     }
 
+    _checkEveryoneReady(){
+        for (let player of this._players){
+            if (!player.ready){
+                return;
+            }
+        }
+        // Everyone ready!
+        this._eventemitter.emit('everyone-ready')
+    }
+
     addPlayer(player){
         if (!player instanceof Player){
             throw 'Invalid player: Not player object';
         }
         this._players.push(player);
+        player.onReadyChanged = this._checkEveryoneReady;
     }
 
     getPlayerByChatId(chatId){

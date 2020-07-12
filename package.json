@@ -1,0 +1,14 @@
+{
+  "name": "haftekhabis",
+  "version": "0.0.1",
+  "description": "A Telegram Bot that lets you play Hafte Khabis.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AmirHossein Mansoori",
+  "license": "MIT",
+  "devDependencies": {
+    "node-telegram-bot-api": "^0.50.0"
+  }
+}

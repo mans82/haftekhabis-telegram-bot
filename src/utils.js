@@ -4,6 +4,7 @@ class Base {
     constructor(){
         this._cardNumbers = '1234567890JKQ';
         this._cardSuites = '♦♥♠♣';
+        this._randomSeed = 82;
     }
 
     _isValidCard(card){
@@ -12,31 +13,36 @@ class Base {
                 return true;
             }
         }
-
         return false;
+    }
+
+    _random(){
+        let randomSine = Math.sin(this._randomSeed++) * 1e4;
+        return randomSine - Math.floor(randomSine);
     }
 }
 
 class CardDeck extends Base{
     constructor(){
+        super();
         this._cards = [];
 
         // Fill the deck
-        for (suit in this._cardSuites){
-            for (num in this._cardNumbers){
+        for (let suit of this._cardSuites){
+            for (let num of this._cardNumbers){
                 this._cards.push(suit + num);
             }
         }
 
-        this._topCardIndex = Math.floor(Math.random() * this._cards);
+        this._topCardIndex = Math.floor(this._random() * this._cards.length);
     }
 
     grabCard(){
-        randomIndex = Math.floor(Math.random() * (this._cards.length - 1));
+        let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
         if (randomIndex < this._topCardIndex){
-            return this._cards.splice(randomIndex);
+            return this._cards.splice(randomIndex, 1);
         }else{
-            return this._cards.splice(randomIndex + 1)
+            return this._cards.splice(randomIndex + 1, 1)
         }
     }
 
@@ -58,6 +64,7 @@ class CardDeck extends Base{
 
 class Player extends Base{
     constructor(name, chatId, messageId){
+        super();
         this.name = name;
         this.chatId = chatId;
         this.messageId = messageId;
@@ -99,7 +106,7 @@ class Player extends Base{
     }
 
     takeCardRandom(){
-        var randomIndex = Math.floor(Math.random() * this._cards.length);
+        var randomIndex = Math.floor(this._random() * this._cards.length);
         return this._cards.splice(randomIndex);
     }
 
@@ -110,6 +117,7 @@ class Player extends Base{
 
 class GameRoom extends Base {
     constructor(){
+        super();
         this._players = [];
         this._deck = new CardDeck();
         this._currentTurn = 0;
@@ -147,7 +155,7 @@ class GameRoom extends Base {
     }
 
     getPlayerByChatId(chatId){
-        for (var player of this._players){
+        for (let player of this._players){
             if (player.chatId == chatId){
                 return player;
             }
@@ -172,7 +180,7 @@ class GameRoom extends Base {
     }
 
     isJoined(chatId){
-        for (player in this._players){
+        for (let player in this._players){
             if (player.chatId == chatId){
                 return true;
             }
@@ -192,8 +200,8 @@ class GameRoom extends Base {
 
         this._gameStarted = true;
 
-        for (var player of this._players){
-            for (var i = 0; i < this.INITIAL_CARDS; i++){
+        for (let player of this._players){
+            for (let i = 0; i < this.INITIAL_CARDS; i++){
                 player.giveCard(this._deck.grabCard());
             }
         }
@@ -226,7 +234,7 @@ class GameRoom extends Base {
     }
 
     _gameShouldFinish(){
-        for (var player of this._players){
+        for (let player of this._players){
             if (player.rank == -1){
                 // we have an unfinished player.
                 return false;
@@ -256,7 +264,7 @@ class GameRoom extends Base {
         if (this.currentPenalty > 0){
             if (card[0] != '7'){
                 // This player should receive fines!
-                for (var i = 0; i < this.currentPenalty; i++){
+                for (let i = 0; i < this.currentPenalty; i++){
                     currentTurnPlayer.giveCard(this._deck.grabCard())
                 }
                 this.currentPenalty = 0;
@@ -304,4 +312,8 @@ class GameRoom extends Base {
         this._updateTurn(shouldHop);
     }
 
-} 
+}
+
+module.exports.CardDeck = CardDeck;
+module.exports.Player = Player;
+module.exports.GameRoom = GameRoom;

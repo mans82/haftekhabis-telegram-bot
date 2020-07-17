@@ -85,8 +85,8 @@ class Player extends Base{
     }
 
     set ready(state){
-        if (!typeof state === 'boolean'){
-            throw 'Ready state should be boolean'
+        if (!(typeof state == 'boolean')){
+            throw 'Ready state should be boolean';
         }
         this._ready = state;
         this._eventemitter.emit('ready-changed', state);

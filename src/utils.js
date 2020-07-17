@@ -68,7 +68,7 @@ class Player extends Base{
         this.name = name;
         this.chatId = chatId;
         this.messageId = messageId;
-        this.ready = false;
+        this._ready = false;
         this.rank = -1; // -1 means this player has not finished playing. otherwise it is the rank of the player.
         this._cards = [];
         this._eventemitter = new EventEmitter();
@@ -80,11 +80,15 @@ class Player extends Base{
         return [...this._cards]; // copy of cards
     }
 
+    get ready(){
+        return this._ready;
+    }
+
     set ready(state){
         if (!typeof state === 'boolean'){
             throw 'Ready state should be boolean'
         }
-        this.ready = state;
+        this._ready = state;
         this._eventemitter.emit('ready-changed', state);
     }
 

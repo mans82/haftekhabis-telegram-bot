@@ -40,9 +40,9 @@ class CardDeck extends Base{
     grabCard(){
         let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
         if (randomIndex < this._topCardIndex){
-            return this._cards.splice(randomIndex, 1);
+            return this._cards.splice(randomIndex, 1)[0];
         }else{
-            return this._cards.splice(randomIndex + 1, 1)
+            return this._cards.splice(randomIndex + 1, 1)[0];
         }
     }
 

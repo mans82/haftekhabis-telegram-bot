@@ -114,10 +114,10 @@ class Player extends Base{
 
     takeCardRandom(){
         var randomIndex = Math.floor(this._random() * this._cards.length);
-        return this._cards.splice(randomIndex);
+        return this._cards.splice(randomIndex, 1)[0];
     }
 
-    has_no_card(){
+    hasNoCard(){
         return this._cards.length == 0;
     }
 }

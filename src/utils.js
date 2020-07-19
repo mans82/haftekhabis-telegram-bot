@@ -96,6 +96,9 @@ class Player extends Base{
         if (!this._isValidCard(card)){
             throw 'Invalid card';
         }
+        if (this._cards.includes(card)){
+            throw 'Card already exists';
+        }
         this._cards.push(card)
     }
 
@@ -106,7 +109,7 @@ class Player extends Base{
         if (!this._cards.includes(card)){
             throw 'Card does not exist';
         }
-        this._cards.splice(card);
+        this._cards.splice(this._cards.indexOf(card), 1)[0];
     }
 
     takeCardRandom(){

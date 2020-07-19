@@ -30,7 +30,6 @@ test('CardDeck class', () => {
   expect(deck._topCardIndex).toBe(14);
   let copyOfCards = deck._cards.slice();
   let grabbedCard = deck.grabCard();
-  console.log(grabbedCard);
   expect(deck._isValidCard(grabbedCard)).toBe(true);
   expect(grabbedCard).not.toBe(copyOfCards[14]);
   expect(deck._cards.length).toBe(51);
@@ -43,4 +42,30 @@ test('CardDeck class', () => {
   }).not.toThrow();
   expect(deck._cards.length).toBe(52);
   expect(deck.getTopCard()).toBe(grabbedCard);
+});
+
+test('Player class', () => {
+  let player = new utils.Player('Steve', '1234', '5678');
+  expect(() => {
+    player.ready = 'omlet';
+  }).toThrow();
+  let testCard = '♥2';
+  player.giveCard(testCard);
+  expect(() => {
+    player.giveCard(testCard);
+  }).toThrow();
+  player.takeCard(testCard);
+  expect(player._cards.length).toBe(0);
+  expect(player.hasNoCard()).toBe(true);
+  expect(() => {
+    player.takeCard('♥4');
+  }).toThrow();
+  player.giveCard('♥2');
+  player.giveCard('♥4');
+  let randomCard = player.takeCardRandom();
+  player._randomSeed = 82;
+  expect(player._isValidCard(randomCard)).toBe(true);
+  expect(randomCard).toBe('♥2');
+  expect(player._cards.length).toBe(1);
+  expect(player.hasNoCard()).toBe(false);
 });

@@ -154,7 +154,7 @@ class GameRoom extends Base {
     }
 
     addPlayer(player){
-        if (!player instanceof Player){
+        if (!(player instanceof Player)){
             throw 'Invalid player: Not player object';
         }
         this._players.push(player);

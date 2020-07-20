@@ -217,10 +217,12 @@ class GameRoom extends Base {
     }
 
     _isCompatible(card){
-        return (typeof card === 'string' &&
-            card.length == 2 &&
-            card[0] == this.topCard[0] &&
-            card[1] == this.topCard[1]
+        return (
+            this._isValidCard(card) &&
+            (
+                (card[0] == this.topCard[0]) !=
+                (card[1] == this.topCard[1])
+            )
         )
     }
 

@@ -187,7 +187,7 @@ class GameRoom extends Base {
     }
 
     isJoined(chatId){
-        for (let player in this._players){
+        for (let player of this._players){
             if (player.chatId == chatId){
                 return true;
             }

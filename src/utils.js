@@ -269,14 +269,14 @@ class GameRoom extends Base {
         // the card is appropriate.
 
         var currentTurnPlayer = this._players[this._currentTurn];
-        if (!currentTurnPlayer.cards.include(card)){
+        if (!currentTurnPlayer.cards.includes(card)){
             throw 'Player doesn\'t have such card';
         }
 
         var shouldHop = false;
 
         if (this.currentPenalty > 0){
-            if (card[0] != '7'){
+            if (card[1] != '7'){
                 // This player should receive fines!
                 for (let i = 0; i < this.currentPenalty; i++){
                     currentTurnPlayer.giveCard(this._deck.grabCard())
@@ -285,17 +285,17 @@ class GameRoom extends Base {
                 this._updateTurn(shouldHop);
             }
         }
-        if (card[0] === '0'){
+        if (card[1] === '0'){
             // reverse game flow
             this.flow *= -1;
-        }else if (card[0] == '8'){
+        }else if (card[1] == '8'){
             // change the turn to the previous player, so when updating currentTurn, the turn get to this player
             // again.
             this._currentTurn -= this.flow;
-        }else if (card[0] == '7'){
+        }else if (card[1] == '7'){
             // add to penalty cards; so the first player that doesn't put 7 card gets these penalties!
             this.currentPenalty += this.SEVEN_CARD_PENALTY;
-        }else if (card[0] == '2'){
+        }else if (card[1] == '2'){
             if (finedPlayer){
                 fineCard = currentTurnPlayer.takeCardRandom();
                 finedPlayer.giveCard(fineCard);
@@ -304,7 +304,7 @@ class GameRoom extends Base {
                 this._eventemitter.emit('player-to-fine', currentTurnPlayer);
                 return;
             }
-        }else if (card[0] == '1'){
+        }else if (card[1] == '1'){
             // hop.
             shouldHop = true;
         }

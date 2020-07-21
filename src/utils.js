@@ -129,7 +129,7 @@ class GameRoom extends Base {
         this._deck = new CardDeck();
         this._currentTurn = 0;
         this.currentPenalty = 0;
-        this.flow = 0;
+        this.flow = 1;
         this._lastRank = 0;
         this._gameStarted = false;
         this._gameFinished = false;
@@ -227,11 +227,16 @@ class GameRoom extends Base {
     }
 
     _updateTurn(hop = false){
+        let currentTurn;
         if (hop){
-            this._currentTurn = (this._currentTurn + 2 * this.flow) % this._players.length;
+            currentTurn = (this._currentTurn + 2 * this.flow);
         }else{
-            this._currentTurn = (this._currentTurn + this.flow) % this._players.length;
+            currentTurn = (this._currentTurn + this.flow);
         }
+        while (currentTurn < 0){
+            currentTurn += this._players.length;
+        }
+        this._currentTurn = currentTurn % this._players.length;
 
         if (this._players[this._currentTurn].rank > 0){
             // This player has finished the round. go for the next

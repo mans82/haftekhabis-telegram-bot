@@ -283,6 +283,7 @@ class GameRoom extends Base {
                 }
                 this.currentPenalty = 0;
                 this._updateTurn(shouldHop);
+                return;
             }
         }
         if (card[1] === '0'){

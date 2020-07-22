@@ -299,7 +299,7 @@ class GameRoom extends Base {
             this.currentPenalty += this.SEVEN_CARD_PENALTY;
         }else if (card[1] == '2'){
             if (finedPlayer){
-                fineCard = currentTurnPlayer.takeCardRandom();
+                let fineCard = currentTurnPlayer.takeCardRandom();
                 finedPlayer.giveCard(fineCard);
             }else{
                 // a signal should be emitted, indicating that a player should be chosen to be fined.

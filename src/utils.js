@@ -34,12 +34,13 @@ class CardDeck extends Base{
             }
         }
 
-        this._topCardIndex = Math.floor(this._random() * this._cards.length);
+        this._topCard = this._cards[Math.floor(this._random() * this._cards.length)];
     }
 
     grabCard(){
         let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
-        if (randomIndex < this._topCardIndex){
+        let topCardIndex = this._cards.indexOf(this.topCard);
+        if (randomIndex < topCardIndex){
             return this._cards.splice(randomIndex, 1)[0];
         }else{
             return this._cards.splice(randomIndex + 1, 1)[0];
@@ -54,11 +55,11 @@ class CardDeck extends Base{
             throw 'Card already exists';
         }
         this._cards.push(card);
-        this._topCardIndex = this._cards.length - 1;
+        this._topCard = card;
     }
 
-    getTopCard(){
-        return this._cards[this._topCardIndex];
+    get topCard(){
+        return this._topCard;
     }
 }
 
@@ -183,7 +184,7 @@ class GameRoom extends Base {
     }
 
     get topCard(){
-        return this._deck.getTopCard();
+        return this._deck.topCard;
     }
 
     isJoined(chatId){

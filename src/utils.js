@@ -250,10 +250,19 @@ class GameRoom extends Base {
 
     _gameShouldFinish(){
         for (let player of this._players){
+            var unfinishedCount = 0;
+            var unfinishedPlayer;
             if (player.rank == -1){
-                // we have an unfinished player.
-                return false;
+                unfinishedPlayer = player;
+                if (++unfinishedCount >= 1){
+                    // we have more than one unfinished player. The game continues!
+                    return false;
+                }
             }
+        }
+        if (unfinishedCount == 1){
+            // lets give this last remaining player a rank!
+            unfinishedPlayer.rank = ++this._lastRank;
         }
         // everyone has finished!
         return true;
@@ -287,6 +296,10 @@ class GameRoom extends Base {
                 return;
             }
         }
+
+        currentTurnPlayer.takeCard(card);
+        this._deck.putCard(card);
+
         if (card[1] === '0'){
             // reverse game flow
             this.flow *= -1;
@@ -302,22 +315,20 @@ class GameRoom extends Base {
                 let fineCard = currentTurnPlayer.takeCardRandom();
                 finedPlayer.giveCard(fineCard);
             }else{
-                // a signal should be emitted, indicating that a player should be chosen to be fined.
-                this._eventemitter.emit('player-to-fine', currentTurnPlayer);
-                return;
+                if (!currentTurnPlayer.hasNoCard()){
+                    // a signal should be emitted, indicating that a player should be chosen to be fined.
+                    this._eventemitter.emit('player-to-fine', currentTurnPlayer);
+                    return;
+                }
             }
         }else if (card[1] == '1'){
             // hop.
             shouldHop = true;
         }
 
-        currentTurnPlayer.takeCard(card);
-        this._deck.putCard(card);
-
         if (currentTurnPlayer.cards.length == 0){
             // give this player the rank he/she deserves!
-            this._lastRank += 1;
-            currentTurnPlayer.rank = this._lastRank;
+            currentTurnPlayer.rank = ++this._lastRank;
             if (this._gameShouldFinish()){
                 this._gameFinished = true;
                 this._eventemitter.emit('game-finished', this.players);

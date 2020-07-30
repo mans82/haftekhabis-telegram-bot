@@ -100,6 +100,10 @@ class Player extends Base{
         if (this._cards.includes(card)){
             throw 'Card already exists';
         }
+        if (this.rank != -1){
+            // The player has finished playing
+            throw 'Player has finished the game'
+        }
         this._cards.push(card)
     }
 
@@ -110,10 +114,21 @@ class Player extends Base{
         if (!this._cards.includes(card)){
             throw 'Card does not exist';
         }
+        if (this.rank != -1){
+            // The player has finished playing
+            throw 'Player has finished the game'
+        }
         this._cards.splice(this._cards.indexOf(card), 1)[0];
     }
 
     takeCardRandom(){
+        if (this.rank != -1){
+            // The player has finished playing
+            throw 'Player has finished the game'
+        }
+        if (this.hasNoCard()){
+            throw 'Player has no card'
+        }
         var randomIndex = Math.floor(this._random() * this._cards.length);
         return this._cards.splice(randomIndex, 1)[0];
     }

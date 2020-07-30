@@ -264,12 +264,12 @@ class GameRoom extends Base {
     }
 
     _gameShouldFinish(){
+        let unfinishedCount = 0;
+        let unfinishedPlayer;
         for (let player of this._players){
-            var unfinishedCount = 0;
-            var unfinishedPlayer;
             if (player.rank == -1){
                 unfinishedPlayer = player;
-                if (++unfinishedCount >= 1){
+                if (++unfinishedCount > 1){
                     // we have more than one unfinished player. The game continues!
                     return false;
                 }

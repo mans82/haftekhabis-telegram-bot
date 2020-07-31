@@ -37,13 +37,17 @@ class CardDeck extends Base{
         this._topCard = this._cards[Math.floor(this._random() * this._cards.length)];
     }
 
-    grabCard(){
-        let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
-        let topCardIndex = this._cards.indexOf(this.topCard);
-        if (randomIndex < topCardIndex){
-            return this._cards.splice(randomIndex, 1)[0];
+    grabCard(card){
+        if (card){
+            this._cards.splice(this._cards.indexOf(card), 1);
         }else{
-            return this._cards.splice(randomIndex + 1, 1)[0];
+            let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
+            let topCardIndex = this._cards.indexOf(this.topCard);
+            if (randomIndex < topCardIndex){
+                return this._cards.splice(randomIndex, 1)[0];
+            }else{
+                return this._cards.splice(randomIndex + 1, 1)[0];
+            }
         }
     }
 
@@ -312,9 +316,10 @@ class GameRoom extends Base {
             }
         }
 
+        const initialTopCard = this.topCard;
         currentTurnPlayer.takeCard(card);
         this._deck.putCard(card);
-
+        
         if (card[1] === '0'){
             // reverse game flow
             this.flow *= -1;
@@ -332,6 +337,9 @@ class GameRoom extends Base {
             }else{
                 if (!currentTurnPlayer.hasNoCard()){
                     // a signal should be emitted, indicating that a player should be chosen to be fined.
+                    this._deck.grabCard(card);
+                    this._deck._topCard = initialTopCard;
+                    currentTurnPlayer.giveCard(card);
                     this._eventemitter.emit('player-to-fine', currentTurnPlayer);
                     return;
                 }

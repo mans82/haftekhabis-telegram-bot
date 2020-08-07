@@ -12,6 +12,7 @@
     "node-telegram-bot-api": "^0.50.0"
   },
   "dependencies": {
-    "jest": "^26.1.0"
+    "jest": "^26.1.0",
+    "socks5-https-client": "^1.2.1"
   }
 }

@@ -179,6 +179,7 @@ class GameRoom extends Base {
         }
         this._players.push(player);
         player.onReadyChanged = this._checkEveryoneReady;
+        this._eventemitter.emit('new-player-added', player);
     }
 
     getPlayerByChatId(chatId){
@@ -232,7 +233,7 @@ class GameRoom extends Base {
             }
         }
 
-        this._eventemitter.emit('game-started', this.players);
+        this._eventemitter.emit('game-started');
     }
 
     _isCompatible(card){
@@ -263,7 +264,7 @@ class GameRoom extends Base {
             return;
         }
 
-        this._eventemitter.emit('turn-changed', this.players, this._currentTurn)
+        this._eventemitter.emit('turn-changed')
     }
 
     _gameShouldFinish(){
@@ -353,7 +354,7 @@ class GameRoom extends Base {
             currentTurnPlayer.rank = ++this._lastRank;
             if (this._gameShouldFinish()){
                 this._gameFinished = true;
-                this._eventemitter.emit('game-finished', this.players);
+                this._eventemitter.emit('game-finished');
                 return;
             }
         }

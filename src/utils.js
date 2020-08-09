@@ -187,7 +187,6 @@ class GameRoom extends Base {
                 return player;
             }
         }
-        throw 'Player not found';
     }
 
     get players(){

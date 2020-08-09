@@ -96,9 +96,7 @@ test('GameRoom class', () => {
   expect(room.getPlayerByChatId('1111')).toBe(player1);
   expect(room.getPlayerByChatId('2222')).toBe(player2);
   expect(room.getPlayerByChatId('3333')).toBe(player3);
-  expect(() => {
-    room.getPlayerByChatId('4444');
-  }).toThrow();
+  expect(room.getPlayerByChatId('4444')).toBe(undefined);
   expect(room.isJoined('1111')).toBe(true);
   expect(room.isJoined('4321')).toBe(false);
   player1.ready = true;

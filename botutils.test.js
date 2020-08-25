@@ -43,3 +43,62 @@ test('RoomManager: changing players\' ready state', (done) => {
     player1.ready = true;
     player2.ready = true;
 });
+
+test('RoomManager: starting game', (done) => {
+    roomManager.once('game-started', (_roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        done();
+    });
+    roomObj.startGame();
+});
+
+test('RoomManager: player-to-fine event', (done) => {
+    // Rebuilding the deck, the harsh way!
+    creatorPlayer._cards = [
+        '♦2',
+        '♥8'
+    ];
+    player1._cards = [
+        '♦8'
+    ];
+    player2._cards = [
+        '♥6'
+    ];
+    roomObj._deck = new utils.CardDeck();
+    roomObj._deck._topCard = '♦5';
+    for (let card of creatorPlayer._cards){
+        let index = roomObj._deck._cards.indexOf(card);
+        roomObj._deck._cards.splice(index, 1);
+    }
+    for (let card of player1._cards){
+        let index = roomObj._deck._cards.indexOf(card);
+        roomObj._deck._cards.splice(index, 1);
+    }
+    for (let card of player2._cards){
+        let index = roomObj._deck._cards.indexOf(card);
+        roomObj._deck._cards.splice(index, 1);
+    }
+    roomManager.once('player-to-fine', (_roomObj, finerPlayer) => {
+    expect(_roomObj).toBe(roomObj);
+    expect(finerPlayer).toBe(creatorPlayer);
+        done();
+    });
+    roomObj.play('♦2') // Creator plays. player-to-fine should fire.
+});
+
+test('RoomManager: turn-changed event', (done) => {
+    roomManager.once('turn-changed', (_roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        done();
+    });
+    roomObj.play('♦2', player1); // Creator plays. turn-changed should fire
+});
+
+test('RoomManager: game-finished event', (done) => {
+    roomManager.once('game-finished', (_roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        done();
+    });
+    roomObj.play('♦8'); // Player 1 plays
+    roomObj.play('♥8'); // Player 1 plays. Game finishes.
+});

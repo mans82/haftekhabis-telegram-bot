@@ -1,20 +1,20 @@
-var utils = require('./src/utils');
+const utils = require('./src/utils');
 
-test('Base class', () => {
-  // just importing a class that subclasses Base.
-  let dummyObj = new utils.CardDeck();
-  expect(dummyObj._isValidCard(22)).toBe(false);
-  expect(dummyObj._isValidCard('js')).toBe(false);
-  expect(dummyObj._isValidCard('♦1')).toBe(true);
-  dummyObj._randomSeed = 82;
-  let random1 = dummyObj._random();
-  dummyObj._randomSeed = 83;
-  let random2 = dummyObj._random();
-  expect(random1).not.toBe(random2);
+test('Basic module functions', () => {
+  expect(utils._isValidCard(22)).toBe(false);
+  expect(utils._isValidCard('js')).toBe(false);
+  expect(utils._isValidCard('♦1')).toBe(true);
+  const rand1 = utils._random();
+  const rand2 = utils._random();
+  expect(rand1).not.toBe(rand2);
 });
 
+
 test('CardDeck class', () => {
-  let deck = new utils.CardDeck();
+  utils._constants.randomSeed = 82;
+  expect(utils._constants.randomSeed).toBe(82);
+  const deck = new utils.CardDeck();
+  expect(utils._constants.randomSeed).toBe(83);
   expect(deck._cards.length).toBe(52);
   expect(deck._cards.slice().sort()).toEqual([
       '♦1', '♥1', '♠1', '♣1', '♦2', '♥2', '♠2',
@@ -26,15 +26,17 @@ test('CardDeck class', () => {
       '♠J', '♣J', '♦K', '♥K', '♠K', '♣K', '♦Q',
       '♥Q', '♠Q', '♣Q'
   ].sort());
-  // deck._randomSeed = 82;
   expect(deck.topCard).toBe('♥2');
-  let copyOfCards = deck._cards.slice();
-  let grabbedCard = deck.grabCard();
-  expect(deck._isValidCard(grabbedCard)).toBe(true);
+  const copyOfCards = deck._cards.slice();
+  const grabbedCard = deck.grabCard();
+  expect(utils._isValidCard(grabbedCard)).toBe(true);
   expect(deck.topCard).not.toBe(grabbedCard);
   expect(deck.topCard).toBe(copyOfCards[14]);
   expect(grabbedCard).not.toBe(copyOfCards[14]);
   expect(deck._cards.length).toBe(51);
+  expect(() => {
+    deck.putCard('card');
+  }).toThrow();
   expect(() => {
     deck.putCard('♥1');
   }).toThrow();
@@ -47,11 +49,11 @@ test('CardDeck class', () => {
 });
 
 test('Player class', () => {
-  let player = new utils.Player('Steve', '1234', '5678');
+  const player = new utils.Player('Steve', '1234', '5678');
   expect(() => {
     player.ready = 'omlet';
   }).toThrow();
-  let testCard = '♥2';
+  const testCard = '♥2';
   player.giveCard(testCard);
   expect(() => {
     player.giveCard(testCard);
@@ -64,28 +66,19 @@ test('Player class', () => {
   }).toThrow();
   player.giveCard('♥2');
   player.giveCard('♥4');
-  let randomCard = player.takeCardRandom();
-  player._randomSeed = 82;
-  expect(player._isValidCard(randomCard)).toBe(true);
+  utils._constants.randomSeed = 82;
+  const randomCard = player.takeCardRandom();
+  expect(utils._isValidCard(randomCard)).toBe(true);
   expect(randomCard).toBe('♥2');
   expect(player._cards.length).toBe(1);
   expect(player.hasNoCard()).toBe(false);
 });
 
-test('GameRoom class', () => {
-  let room = new utils.GameRoom();
-  let player1 = new utils.Player('Player1', '1111', '1001');
-  let player2 = new utils.Player('Player2', '2222', '2002');
-  let player3 = new utils.Player('Player3', '3333', '3003');
-  let mockEmitter = {
-    lastSignal : '',
-    on() {return},
-    emit(singal, callback) {this.lastSignal = singal}
-  };
-  player1._eventemitter = {...mockEmitter};
-  player2._eventemitter = {...mockEmitter};
-  player3._eventemitter = {...mockEmitter};
-  room._eventemitter = mockEmitter;
+const room = new utils.GameRoom();
+const player1 = new utils.Player('Player1', '1111', '1001');
+const player2 = new utils.Player('Player2', '2222', '2002');
+const player3 = new utils.Player('Player3', '3333', '3003');
+test('GameRoom: basic methods', () => {
   expect(() => {
     room.addPlayer('player');
   }).toThrow();
@@ -99,20 +92,27 @@ test('GameRoom class', () => {
   expect(room.getPlayerByChatId('4444')).toBe(undefined);
   expect(room.isJoined('1111')).toBe(true);
   expect(room.isJoined('4321')).toBe(false);
+});
+
+test('Player: ready-changed signal', (done) => {
+  player1.once('ready-changed', (state) => {
+    expect(state).toBe(true);
+    done();
+  });
   player1.ready = true;
-  expect(player1._eventemitter.lastSignal).toBe('ready-changed');
-  room._checkEveryoneReady();
-  expect(room._eventemitter.lastSignal).not.toBe('everyone-ready');
+});
+
+test('GameRoom: everyone-ready signal', (done) => {
+  room.once('everyone-ready', () => {
+    done();
+  });
   player2.ready = true;
-  expect(player2._eventemitter.lastSignal).toBe('ready-changed');
-  room._checkEveryoneReady();
-  expect(room._eventemitter.lastSignal).not.toBe('everyone-ready');
   player3.ready = true;
-  expect(player3._eventemitter.lastSignal).toBe('ready-changed');
-  room._checkEveryoneReady();
-  expect(room._eventemitter.lastSignal).toBe('everyone-ready');
-  let initialMinPlayers = room.MIN_PLAYERS;
-  let initialMaxPlayers = room.MAX_PLAYERS;
+});
+
+test('GameRoom: game start', () => {
+  const initialMinPlayers = room.MIN_PLAYERS;
+  const initialMaxPlayers = room.MAX_PLAYERS;
   room.MIN_PLAYERS = 10;
   expect(() => {
     room.startGame();
@@ -130,6 +130,9 @@ test('GameRoom class', () => {
   expect(player1.cards.length).toBe(room.INITIAL_CARDS);
   expect(player2.cards.length).toBe(room.INITIAL_CARDS);
   expect(player3.cards.length).toBe(room.INITIAL_CARDS);
+});
+
+test('GameRoom: updateTurn()', () => {
   room._randomSeed = 82;
   // top card is ♥2.
   expect(room._isCompatible('♥2')).toBe(false);
@@ -151,7 +154,9 @@ test('GameRoom class', () => {
   expect(room._currentTurn).toBe(2);
   room._currentTurn = 0;
   room.flow = 1;
-  expect(room._gameShouldFinish()).toBe(false);
+});
+
+test('GameRoom: play() handling of invalid cards', () => {
   expect(() => {
     room.play('card');
   }).toThrow();
@@ -161,6 +166,10 @@ test('GameRoom class', () => {
   expect(() => {
     room.play('♠1');
   }).toThrow();
+});
+
+test('GameRoom: turn-changed signal', (done) => {
+  // Rebuild the deck, the harsh way!
   player1._cards = [
     '♥7',
     '♦2'
@@ -178,7 +187,6 @@ test('GameRoom class', () => {
     '♥1',
     '♠0'
   ]
-  // Rebuild the deck, the harsh way!
   room._deck = new utils.CardDeck();
   for (let card of player1._cards){
     let index = room._deck._cards.indexOf(card);
@@ -193,12 +201,17 @@ test('GameRoom class', () => {
     room._deck._cards.splice(index, 1);
   }
   room._deck._topCard = '♥5';
+  room.once('turn-changed', () => {
+    expect(player1.cards.length).toBe(1);
+    expect(room.currentPenalty).toBe(room.SEVEN_CARD_PENALTY);
+    expect(room._currentTurn).toBe(1);
+    expect(room._deck.topCard).toBe('♥7');
+    done();
+  });
   room.play('♥7'); // player1 plays
-  expect(player1.cards.length).toBe(1);
-  expect(room.currentPenalty).toBe(room.SEVEN_CARD_PENALTY);
-  expect(room._currentTurn).toBe(1);
-  expect(room._eventemitter.lastSignal).toBe('turn-changed');
-  expect(room._deck.topCard).toBe('♥7');
+});
+
+test('GameRoom: playing cards that does not require emitting signals', () => {
   room.play('♥3'); // player2 plays
   expect(player2.cards.length).toBe(7 + room.SEVEN_CARD_PENALTY);
   expect(room.currentPenalty).toBe(0);
@@ -222,19 +235,39 @@ test('GameRoom class', () => {
   expect(room._currentTurn).toBe(1);
   expect(player3._cards.length).toBe(0); // Player 3 finishes playing
   expect(player3.rank).toBe(1); //Player3 ranks #1.
+});
+
+test('GameRoom: player-to-fine signal', (done) => {
+  room.once('player-to-fine', (currentTurnPlayer) => {
+    expect(currentTurnPlayer).toBe(player2);
+    expect(player2._cards.length).toBe(4 + room.SEVEN_CARD_PENALTY);
+    expect(player2._cards.includes('♠2')).toBe(true);
+    expect(player1._cards.length).toBe(1);
+    done();
+  });
   room.play('♠2');
-  expect(room._eventemitter.lastSignal).toBe('player-to-fine');
+});
+
+test('GameRoom: playing \'2\' card and giving fines', (done) => {
+  room.once('turn-changed', () => {
+    expect(player2._cards.length).toBe(2 + room.SEVEN_CARD_PENALTY);
+    expect(player2._cards.includes('♠2')).toBe(false);
+    expect(player1._cards.length).toBe(2);
+    done();
+  });
   room.play('♠2', player1); // player2 plays
-  expect(player2._cards.length).toBe(4);
-  expect(player2._cards.includes('♠2')).toBe(false);
-  expect(player1._cards.length).toBe(2);
+});
+
+test('GameRoom: finishing game and ranking players', (done) => {
   // removing player1 fine card so they will have only 1 card
+  room.once('game-finished', () => {
+    expect(room._currentTurn).toBe(0);
+    expect(room.gameFinished).toBe(true);
+    expect(player1.rank).toBe(2);
+    expect(player2.rank).toBe(3);
+    expect(player3.rank).toBe(1);
+    done();
+  });
   player1._cards.splice(player1._cards.indexOf('♥9'), 1);
   room.play('♦2'); // player1 plays
-  expect(room._currentTurn).toBe(0);
-  expect(room._eventemitter.lastSignal).toBe('game-finished');
-  expect(room.gameFinished).toBe(true);
-  expect(player1.rank).toBe(2);
-  expect(player2.rank).toBe(3);
-  expect(player3.rank).toBe(1);
 });

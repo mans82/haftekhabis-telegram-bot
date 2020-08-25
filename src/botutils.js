@@ -20,8 +20,11 @@ class RoomManager extends EventEmitter{
         }
         roomObj.on('new-player-added', (player) => {
             newRoom.messageInfo[player.chatId] = player.messageId;
-            this.emit('new-player-added', roomObj, player);
+            this.emit('room-status-changed');
         });
+        roomObj.on('ready-changed', () => {
+            this.emit('room-status-changed');
+        })
         roomObj.on('game-started', () => {
             this.emit('game-started', roomObj);
         });

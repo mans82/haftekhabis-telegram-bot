@@ -171,6 +171,7 @@ class GameRoom extends EventEmitter{
         this._players.push(player);
         player.on('ready-changed', (state) => {
             this._checkEveryoneReady();
+            this.emit('ready-changed')
         });
         this.emit('new-player-added', player);
     }

@@ -8,14 +8,14 @@ class RoomManager extends EventEmitter{
         // this._eventemitter = new EventEmitter();
     }
 
-    createRoom(creatorPlayer, creatorMessageId, name = 'New Room'){
+    createRoom(creatorPlayer, name = 'New Room'){
         const creatorChatId = creatorPlayer.chatId;
         const roomObj = new utils.GameRoom();
         const newRoom = {
             name: name,
             roomObj: roomObj,
             messageInfo: [
-                {creatorChatId: creatorMessageId}
+                {creatorChatId: creatorPlayer.messageId}
             ]
         }
         roomObj.on('new-player-added', (player) => {
@@ -39,7 +39,7 @@ class RoomManager extends EventEmitter{
         });
         roomObj.addPlayer(creatorPlayer);
         this._rooms[creatorChatId] = newRoom;
-        this.emit('new-room-created', name, creatorChatId, creatorMessageId);
+        this.emit('new-room-created', name, creatorChatId, creatorPlayer.messageId);
     }
 
     getRoomByCreatorChatId(chatId){

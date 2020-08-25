@@ -1,47 +1,44 @@
 const EventEmitter = require('events');
 
-class Base {
-    constructor(){
-        this._cardNumbers = '1234567890JKQ';
-        this._cardSuites = '♦♥♠♣';
-        this._randomSeed = 82;
-    }
-
-    _isValidCard(card){
-        if (typeof card === 'string'){
-            if (this._cardSuites.includes(card[0]) && this._cardNumbers.includes(card[1])){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    _random(){
-        let randomSine = Math.sin(this._randomSeed++) * 1e4;
-        return randomSine - Math.floor(randomSine);
-    }
+const constants = {
+    CARDNUMBERS: '1234567890JKQ',
+    CARDSUITS: '♦♥♠♣',
+    randomSeed: 82
 }
 
-class CardDeck extends Base{
+function isValidCard(card){
+    if (typeof card === 'string'){
+        if (constants.CARDSUITS.includes(card[0]) && constants.CARDNUMBERS.includes(card[1])){
+            return true;
+        }
+    }
+    return false;
+}
+
+function random(){
+    const randomSine = Math.sin(constants.randomSeed++) * 1e4;
+    return randomSine - Math.floor(randomSine);
+}
+
+class CardDeck{
     constructor(){
-        super();
         this._cards = [];
 
         // Fill the deck
-        for (let suit of this._cardSuites){
-            for (let num of this._cardNumbers){
+        for (let suit of constants.CARDSUITS){
+            for (let num of constants.CARDNUMBERS){
                 this._cards.push(suit + num);
             }
         }
 
-        this._topCard = this._cards[Math.floor(this._random() * this._cards.length)];
+        this._topCard = this._cards[Math.floor(random() * this._cards.length)];
     }
 
     grabCard(card){
         if (card){
             this._cards.splice(this._cards.indexOf(card), 1);
         }else{
-            let randomIndex = Math.floor(this._random() * (this._cards.length - 1));
+            let randomIndex = Math.floor(random() * (this._cards.length - 1));
             let topCardIndex = this._cards.indexOf(this.topCard);
             if (randomIndex < topCardIndex){
                 return this._cards.splice(randomIndex, 1)[0];
@@ -52,7 +49,7 @@ class CardDeck extends Base{
     }
 
     putCard(card){
-        if (!this._isValidCard(card)){
+        if (!isValidCard(card)){
             throw 'Invalid card';
         }
         if (this._cards.includes(card)){
@@ -67,7 +64,7 @@ class CardDeck extends Base{
     }
 }
 
-class Player extends Base{
+class Player extends EventEmitter{
     constructor(name, chatId, messageId){
         super();
         this.name = name;
@@ -76,9 +73,6 @@ class Player extends Base{
         this._ready = false;
         this.rank = -1; // -1 means this player has not finished playing. otherwise it is the rank of the player.
         this._cards = [];
-        this._eventemitter = new EventEmitter();
-        this.onReadyChanged = () => {};
-        this._eventemitter.on('ready-changed', this.onReadyChanged);
     }
 
     get cards(){
@@ -94,11 +88,11 @@ class Player extends Base{
             throw 'Ready state should be boolean';
         }
         this._ready = state;
-        this._eventemitter.emit('ready-changed', state);
+        this.emit('ready-changed', state);
     }
 
     giveCard(card){
-        if (!this._isValidCard(card)){
+        if (!isValidCard(card)){
             throw 'Invalid card';
         }
         if (this._cards.includes(card)){
@@ -112,7 +106,7 @@ class Player extends Base{
     }
 
     takeCard(card){
-        if (!this._isValidCard(card)){
+        if (!isValidCard(card)){
             throw 'Invalid card';
         }
         if (!this._cards.includes(card)){
@@ -133,7 +127,7 @@ class Player extends Base{
         if (this.hasNoCard()){
             throw 'Player has no card'
         }
-        var randomIndex = Math.floor(this._random() * this._cards.length);
+        var randomIndex = Math.floor(random() * this._cards.length);
         return this._cards.splice(randomIndex, 1)[0];
     }
 
@@ -142,7 +136,7 @@ class Player extends Base{
     }
 }
 
-class GameRoom extends Base {
+class GameRoom extends EventEmitter{
     constructor(){
         super();
         this._players = [];
@@ -153,9 +147,6 @@ class GameRoom extends Base {
         this._lastRank = 0;
         this._gameStarted = false;
         this._gameFinished = false;
-
-        this._eventemitter = new EventEmitter();
-        this.on = this._eventemitter.on;
 
         this.MIN_PLAYERS = 2;
         this.MAX_PLAYERS = 5;
@@ -170,7 +161,7 @@ class GameRoom extends Base {
             }
         }
         // Everyone ready!
-        this._eventemitter.emit('everyone-ready')
+        this.emit('everyone-ready');
     }
 
     addPlayer(player){
@@ -178,8 +169,10 @@ class GameRoom extends Base {
             throw 'Invalid player: Not player object';
         }
         this._players.push(player);
-        player.onReadyChanged = this._checkEveryoneReady;
-        this._eventemitter.emit('new-player-added', player);
+        player.on('ready-changed', (state) => {
+            this._checkEveryoneReady();
+        });
+        this.emit('new-player-added', player);
     }
 
     getPlayerByChatId(chatId){
@@ -233,12 +226,12 @@ class GameRoom extends Base {
             }
         }
 
-        this._eventemitter.emit('game-started');
+        this.emit('game-started');
     }
 
     _isCompatible(card){
         return (
-            this._isValidCard(card) &&
+            isValidCard(card) &&
             (
                 (card[0] == this.topCard[0]) !=
                 (card[1] == this.topCard[1])
@@ -264,7 +257,7 @@ class GameRoom extends Base {
             return;
         }
 
-        this._eventemitter.emit('turn-changed')
+        this.emit('turn-changed')
     }
 
     _gameShouldFinish(){
@@ -288,7 +281,7 @@ class GameRoom extends Base {
     }
 
     play(card, finedPlayer){
-        if (!this._isValidCard(card)){
+        if (!isValidCard(card)){
             throw 'Not a valid card';
         }
         if (!this._isCompatible(card)){
@@ -340,7 +333,7 @@ class GameRoom extends Base {
                     this._deck.grabCard(card);
                     this._deck._topCard = initialTopCard;
                     currentTurnPlayer.giveCard(card);
-                    this._eventemitter.emit('player-to-fine', currentTurnPlayer);
+                    this.emit('player-to-fine', currentTurnPlayer);
                     return;
                 }
             }
@@ -354,7 +347,7 @@ class GameRoom extends Base {
             currentTurnPlayer.rank = ++this._lastRank;
             if (this._gameShouldFinish()){
                 this._gameFinished = true;
-                this._eventemitter.emit('game-finished');
+                this.emit('game-finished');
                 return;
             }
         }
@@ -364,6 +357,9 @@ class GameRoom extends Base {
 
 }
 
+module.exports._constants = constants;
+module.exports._isValidCard = isValidCard;
+module.exports._random = random;
 module.exports.CardDeck = CardDeck;
 module.exports.Player = Player;
 module.exports.GameRoom = GameRoom;

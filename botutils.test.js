@@ -26,13 +26,20 @@ test('RoomManager: createRoom()', () => {
     expect(roomInfo.name).toBe('Main room');
 });
 
-test('RoomManager: new-player-added event', (done) => {
-    roomManager.once('new-player-added', (_roomObj, player) => {
-        expect(_roomObj).toBe(roomObj);
-        expect(roomInfo.messageInfo[player.chatId]).toBe(player.messageId);
-        expect(player).toBe(player1);
+test('RoomManager: adding new players', (done) => {
+    roomManager.once('room-status-changed', () => {
+        expect(roomInfo.messageInfo[player1.chatId]).toBe(player1.messageId);
         done();
     });
     roomObj.addPlayer(player1);
     roomObj.addPlayer(player2);
+});
+
+test('RoomManager: changing players\' ready state', (done) => {
+    roomManager.once('room-status-changed', () => {
+        done();
+    });
+    creatorPlayer.ready = true;
+    player1.ready = true;
+    player2.ready = true;
 });

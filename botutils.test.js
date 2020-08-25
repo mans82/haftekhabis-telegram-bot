@@ -16,7 +16,7 @@ test('RoomManager: new-room-created event', (done) => {
         expect(creatorMessageId).toBe(100);
         done();
     });
-    roomManager.createRoom(creatorPlayer, 100, 'Main room');
+    roomManager.createRoom(creatorPlayer, 'Main room');
     roomInfo = roomManager._rooms[creatorChatId];
     roomObj = roomInfo.roomObj;
 });

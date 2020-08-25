@@ -1,21 +1,38 @@
-const { TestScheduler } = require("jest");
-
 const utils = require('./src/utils');
 const RoomManager = require('./src/botutils').RoomManager;
 
-test('Test RoomManager', () => {
-    let mockEmitter = {
-        lastSignal : '',
-        on() {return},
-        emit(singal, callback) {this.lastSignal = singal}
-    };
-    const roomManager = new RoomManager();
-    roomManager._eventemitter = {...mockEmitter}; // a copy of mockEmitter
-    const creatorChatId = 10;
-    const creatorPlayer = new utils.Player('Creator', creatorChatId, 100);
-    const Player1 = new utils.Player('Player 1', 20, 200);
-    const Player2 = new utils.Player('Player 2', 30, 300);
+const roomManager = new RoomManager();
+const creatorChatId = 10;
+const creatorPlayer = new utils.Player('Creator', creatorChatId, 100);
+const player1 = new utils.Player('Player 1', 20, 200);
+const player2 = new utils.Player('Player 2', 30, 300);
+let roomInfo;
+let roomObj;
+
+test('RoomManager: new-room-created event', (done) => {
+    roomManager.on('new-room-created', (name, creatorChatId, creatorMessageId) => {
+        expect(name).toBe('Main room');
+        expect(creatorChatId).toBe(creatorPlayer.chatId);
+        expect(creatorMessageId).toBe(100);
+        done();
+    });
     roomManager.createRoom(creatorPlayer, 100, 'Main room');
-    expect(roomManager._rooms[creatorChatId].name).toBe('Main room');
-    expect(roomManager._eventemitter.lastSignal).toBe('room-created');
-})
+    roomInfo = roomManager._rooms[creatorChatId];
+    roomObj = roomInfo.roomObj;
+});
+
+test('RoomManager: createRoom()', () => {
+    expect(roomManager.getRoomByCreatorChatId(10)).toBe(roomInfo);
+    expect(roomInfo.name).toBe('Main room');
+});
+
+test('RoomManager: new-player-added event', (done) => {
+    roomManager.once('new-player-added', (_roomObj, player) => {
+        expect(_roomObj).toBe(roomObj);
+        expect(roomInfo.messageInfo[player.chatId]).toBe(player.messageId);
+        expect(player).toBe(player1);
+        done();
+    });
+    roomObj.addPlayer(player1);
+    roomObj.addPlayer(player2);
+});

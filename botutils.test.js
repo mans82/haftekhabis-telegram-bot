@@ -9,19 +9,10 @@ const player2 = new utils.Player('Player 2', 30, 300);
 let roomInfo;
 let roomObj;
 
-test('RoomManager: new-room-created event', (done) => {
-    roomManager.on('new-room-created', (name, creatorChatId, creatorMessageId) => {
-        expect(name).toBe('Main room');
-        expect(creatorChatId).toBe(creatorPlayer.chatId);
-        expect(creatorMessageId).toBe(100);
-        done();
-    });
+test('RoomManager: createRoom()', () => {
     roomManager.createRoom(creatorPlayer, 'Main room');
     roomInfo = roomManager._rooms[creatorChatId];
     roomObj = roomInfo.roomObj;
-});
-
-test('RoomManager: createRoom()', () => {
     expect(roomManager.getRoomByCreatorChatId(10)).toBe(roomInfo);
     expect(roomInfo.name).toBe('Main room');
 });

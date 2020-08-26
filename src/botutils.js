@@ -20,7 +20,7 @@ class RoomManager extends EventEmitter{
         }
         roomObj.on('new-player-added', (player) => {
             newRoom.messageInfo[player.chatId] = player.messageId;
-            this.emit('room-status-changed');
+            this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('ready-changed', () => {
             this.emit('room-status-changed');
@@ -39,7 +39,6 @@ class RoomManager extends EventEmitter{
         });
         roomObj.addPlayer(creatorPlayer);
         this._rooms[creatorChatId] = newRoom;
-        this.emit('new-room-created', name, creatorChatId, creatorPlayer.messageId);
     }
 
     getRoomByCreatorChatId(chatId){

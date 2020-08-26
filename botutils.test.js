@@ -19,11 +19,25 @@ test('RoomManager: createRoom()', () => {
 
 test('RoomManager: adding new players', (done) => {
     roomManager.once('room-status-changed', () => {
-        expect(roomInfo.messageInfo[player1.chatId]).toBe(player1.messageId);
         done();
     });
     roomObj.addPlayer(player1);
     roomObj.addPlayer(player2);
+});
+
+test('RoomManager: creating room by players that have already joined', () => {
+    expect(() => {
+        roomManager.createRoom(new utils.Player('Dummy', 10, 100))
+    }).toThrow();
+    expect(() => {
+        roomManager.createRoom(new utils.Player('Dummy', 20, 200))
+    }).toThrow();
+});
+
+test('RoomManager: getPlayerByChatId()', () => {
+    expect(roomManager.getPlayerByChatId(10)).toBe(creatorPlayer);
+    expect(roomManager.getPlayerByChatId(20)).toBe(player1);
+    expect(roomManager.getPlayerByChatId(999)).toBe(undefined);
 });
 
 test('RoomManager: changing players\' ready state', (done) => {

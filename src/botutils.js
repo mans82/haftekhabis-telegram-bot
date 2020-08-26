@@ -10,20 +10,20 @@ class RoomManager extends EventEmitter{
 
     createRoom(creatorPlayer, name = 'New Room'){
         const creatorChatId = creatorPlayer.chatId;
+        if (this.getPlayerByChatId(creatorChatId)){
+            // Player already playing.
+            throw 'Player already playing a game'
+        }
         const roomObj = new utils.GameRoom();
         const newRoom = {
             name: name,
-            roomObj: roomObj,
-            messageInfo: [
-                {creatorChatId: creatorPlayer.messageId}
-            ]
+            roomObj: roomObj
         }
         roomObj.on('new-player-added', (player) => {
-            newRoom.messageInfo[player.chatId] = player.messageId;
             this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('ready-changed', () => {
-            this.emit('room-status-changed');
+            this.emit('room-status-changed', name, roomObj);
         })
         roomObj.on('game-started', () => {
             this.emit('game-started', roomObj);
@@ -43,6 +43,15 @@ class RoomManager extends EventEmitter{
 
     getRoomByCreatorChatId(chatId){
         return this._rooms[chatId];
+    }
+
+    getPlayerByChatId(chatId) {
+        for (let roomInfo of Object.values(this._rooms)){
+            const player = roomInfo.roomObj.getPlayerByChatId(chatId);
+            if (player){
+                return player;
+            }
+        }
     }
 }
 

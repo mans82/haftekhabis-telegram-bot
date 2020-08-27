@@ -120,6 +120,26 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
     bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
 });
 
+roomManager.on('player-to-fine', (roomObj, card, finerPlayer) => {
+    const chatId = finerPlayer.chatId;
+    const messageId = finerPlayer.messageId;
+    const players = roomObj.players;
+    const inlineKeyboardMarkup = {
+        inline_keyboard: []
+    };
+    for (let player of players) {
+        if (player == finerPlayer) {
+            continue;
+        }
+        const finedPlayerChatId = player.chatId;
+        inlineKeyboardMarkup.inline_keyboard.push([{
+            text: player.name,
+            callback_data: `f/${finedPlayerChatId}/${card}`
+        }]);
+    }
+    bot.editMessageText('Select a player to fine:', {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
+});
+
 bot.onText(/^(\/start)$/, (msg, match) => {
     // Send welcome message
     const chatId = msg.chat.id;
@@ -169,6 +189,14 @@ bot.on('callback_query', (query) => {
     const queryData = query.data;
     const chatId = query.from.id;
     const messageId = query.message.message_id;
+    if (queryData.startsWith('f')) {
+        // someone should be fined
+        const parsedQueryData = queryData.split('/');
+        const finedPlayerChatId = parsedQueryData[1];
+        const fineCard = parsedQueryData[2];
+        const room = roomManager.getRoomByPlayerChatId(chatId);
+        room.play(fineCard, finedPlayerChatId);
+    }
     if (queryData == 'r') {
         // Ready state should be changed
         const player = roomManager.getPlayerByChatId(chatId);

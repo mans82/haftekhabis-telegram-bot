@@ -259,7 +259,7 @@ test('GameRoom: playing cards that does not require emitting signals', () => {
 });
 
 test('GameRoom: player-to-fine signal', (done) => {
-  room.once('player-to-fine', (currentTurnPlayer) => {
+  room.once('player-to-fine', (card, currentTurnPlayer) => {
     expect(currentTurnPlayer).toBe(player2);
     expect(player2._cards.length).toBe(4 + room.SEVEN_CARD_PENALTY);
     expect(player2._cards.includes('♠2')).toBe(true);
@@ -276,7 +276,7 @@ test('GameRoom: playing \'2\' card and giving fines', (done) => {
     expect(player1._cards.length).toBe(2);
     done();
   });
-  room.play('♠2', player1); // player2 plays
+  room.play('♠2', player1.chatId); // player2 plays
 });
 
 test('GameRoom: finishing game and ranking players', (done) => {

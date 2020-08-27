@@ -308,7 +308,7 @@ class GameRoom extends EventEmitter{
         return true;
     }
 
-    play(card, finedPlayer){
+    play(card, finedPlayerChatId){
         if (!isValidCard(card)){
             throw 'Not a valid card';
         }
@@ -352,6 +352,7 @@ class GameRoom extends EventEmitter{
             // add to penalty cards; so the first player that doesn't put 7 card gets these penalties!
             this.currentPenalty += this.SEVEN_CARD_PENALTY;
         }else if (card[1] == '2'){
+            const finedPlayer = this.getPlayerByChatId(finedPlayerChatId);
             if (finedPlayer){
                 let fineCard = currentTurnPlayer.takeCardRandom();
                 finedPlayer.giveCard(fineCard);
@@ -361,7 +362,7 @@ class GameRoom extends EventEmitter{
                     this._deck.grabCard(card);
                     this._deck._topCard = initialTopCard;
                     currentTurnPlayer.giveCard(card);
-                    this.emit('player-to-fine', currentTurnPlayer);
+                    this.emit('player-to-fine', card, currentTurnPlayer);
                     return;
                 }
             }

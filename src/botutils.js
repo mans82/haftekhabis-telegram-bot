@@ -40,8 +40,8 @@ class RoomManager extends EventEmitter{
         roomObj.on('grabbed-card', (playerChatId) => {
             this.emit('grabbed-card', playerChatId, name, roomObj);
         });
-        roomObj.on('player-to-fine', (finerPlayer) => {
-            this.emit('player-to-fine', roomObj, finerPlayer);
+        roomObj.on('player-to-fine', (card, finerPlayer) => {
+            this.emit('player-to-fine', roomObj, card, finerPlayer);
         });
         roomObj.on('game-finished', () => {
             this.emit('game-finished', roomObj);

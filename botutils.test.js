@@ -109,7 +109,7 @@ test('RoomManager: player-to-fine event', (done) => {
         let index = roomObj._deck._cards.indexOf(card);
         roomObj._deck._cards.splice(index, 1);
     }
-    roomManager.once('player-to-fine', (_roomObj, finerPlayer) => {
+    roomManager.once('player-to-fine', (_roomObj, card, finerPlayer) => {
     expect(_roomObj).toBe(roomObj);
     expect(finerPlayer).toBe(creatorPlayer);
         done();
@@ -123,7 +123,7 @@ test('RoomManager: changing turns', (done) => {
         expect(name).toBe(roomInfo.name);
         done();
     });
-    roomObj.play('♦2', player1); // Creator plays. turn-changed should fire
+    roomObj.play('♦2', player1.chatId); // Creator plays. turn-changed should fire
 });
 
 test('RoomManager: game-finished event', (done) => {

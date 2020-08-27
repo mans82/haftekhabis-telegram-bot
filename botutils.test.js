@@ -19,10 +19,22 @@ test('RoomManager: createRoom()', () => {
 });
 
 test('RoomManager: adding new players', (done) => {
-    roomManager.once('room-status-changed', () => {
+    roomManager.once('room-status-changed', (name, _roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
         done();
     });
     roomObj.addPlayer(player1);
+    roomObj.addPlayer(player2);
+});
+
+test('RoomManager: removing players', (done) => {
+    roomManager.once('room-status-changed', (name, _roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
+        done();
+    });
+    roomObj.removePlayer(player2.chatId);
     roomObj.addPlayer(player2);
 });
 
@@ -42,7 +54,9 @@ test('RoomManager: getPlayerByChatId()', () => {
 });
 
 test('RoomManager: changing players\' ready state', (done) => {
-    roomManager.once('room-status-changed', () => {
+    roomManager.once('room-status-changed', (name, _roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
         done();
     });
     creatorPlayer.ready = true;
@@ -51,8 +65,9 @@ test('RoomManager: changing players\' ready state', (done) => {
 });
 
 test('RoomManager: starting game', (done) => {
-    roomManager.once('game-started', (_roomObj) => {
+    roomManager.once('room-status-changed', (name, _roomObj) => {
         expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
         done();
     });
     roomObj.startGame();
@@ -92,9 +107,10 @@ test('RoomManager: player-to-fine event', (done) => {
     roomObj.play('♦2') // Creator plays. player-to-fine should fire.
 });
 
-test('RoomManager: turn-changed event', (done) => {
-    roomManager.once('turn-changed', (_roomObj) => {
+test('RoomManager: changing turns', (done) => {
+    roomManager.once('room-status-changed', (name, _roomObj) => {
         expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
         done();
     });
     roomObj.play('♦2', player1); // Creator plays. turn-changed should fire

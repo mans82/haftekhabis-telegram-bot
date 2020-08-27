@@ -9,30 +9,72 @@ const bot = new TelegramBot(TOKEN, {polling: true});
 const roomManager = new RoomManager();
 
 roomManager.on('room-status-changed', (name, roomObj) => {
-    let statusText = `Room ${name}\n`
-    for (let player of roomObj.players){
-        statusText += `    ${player.ready ? '(ready)' : '(not ready)'} ${player.name}\n`;
-    }
-    for (let player of roomObj.players){
-        const chatId = player.chatId;
-        const messageId = player.messageId;
-        const inlineKeyboard = {
-            inline_keyboard:
-                [
-                    [
-                        {
-                            text: player.ready ? 'Not ready' : 'Ready',
-                            callback_data: 'r'
-                        },
-                        {
-                            text: 'Leave',
-                            callback_data: 'l'
-                        }
-                    ]
-                ]
+    let statusText = `🎮 ${name}:\n\n`
+    if (!roomObj.gameStarted){
+        // Prepare ready status'
+        for (let player of roomObj.players){
+            statusText += `    ${player.ready ? '🔥' : '💤'} ${player.name}\n`;
         }
-        bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboard});
+        for (let player of roomObj.players){
+            const chatId = player.chatId;
+            const messageId = player.messageId;
+            const inlineKeyboardMarkup = {
+                inline_keyboard:
+                    [
+                        [
+                            {
+                                text: player.ready ? '💤 Not ready!' : '🔥 Ready!',
+                                callback_data: 'r'
+                            },
+                            {
+                                text: '🚪 Leave',
+                                callback_data: 'l'
+                            }
+                        ]
+                    ]
+            }
+            bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
+        } 
+    } else {
+        // Game ongoing
+        // Prepare status text
+        statusText += `🃏 Top card is ${roomObj.topCard}\n\n`
+        for (let player of roomObj.players){
+            if (player.chatId == roomObj.currentTurnPlayerChatId) {
+                if (roomObj.flow == +1) {
+                    // Current player's turn. Flow downward.
+                    statusText += '    🔻';
+                } else {
+                    // Current player's turn. Flow upward.
+                    statusText += '    🔺';
+                }
+            } else {
+                // Not current player's turn.
+                statusText += '    🔹';
+            }
+            statusText += ` ${player.name}\n`
+        }
+        // Now send status text to everyone
+        for (let player of roomObj.players) {
+            const chatId = player.chatId;
+            const messageId = player.messageId;
+            const inlineKeyboardMarkup = {
+                inline_keyboard: []
+            };
+            for (let card of player.cards) {
+                // TODO print card names correctly
+                inlineKeyboardMarkup.inline_keyboard.push([{
+                    text: card,
+                    callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
+                }]);
+            }
+            bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
+        }
     }
+});
+
+roomManager.on('everyone-ready', (roomObj) => {
+    roomObj.startGame();
 });
 
 bot.onText(/^(\/start)$/, (msg, match) => {
@@ -96,5 +138,12 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.removePlayer(chatId);
         bot.deleteMessage(chatId, messageId);
+    } else if (queryData == 'dummy'){
+        return;
+    } else {
+        // its a card
+        const card = queryData;
+        const room = roomManager.getRoomByPlayerChatId(chatId);
+        room.play(card);
     }
 });

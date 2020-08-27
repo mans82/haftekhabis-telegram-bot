@@ -13,7 +13,8 @@ test('RoomManager: createRoom()', () => {
     roomManager.createRoom(creatorPlayer, 'Main room');
     roomInfo = roomManager._rooms[creatorChatId];
     roomObj = roomInfo.roomObj;
-    expect(roomManager.getRoomByCreatorChatId(10)).toBe(roomInfo);
+    expect(roomManager.getRoomInfoByCreatorChatId(10)).toBe(roomInfo);
+    expect(roomManager.getRoomByPlayerChatId(10)).toBe(roomObj);
     expect(roomInfo.name).toBe('Main room');
 });
 

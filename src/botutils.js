@@ -41,8 +41,18 @@ class RoomManager extends EventEmitter{
         this._rooms[creatorChatId] = newRoom;
     }
 
-    getRoomByCreatorChatId(chatId){
+    getRoomInfoByCreatorChatId(chatId){
         return this._rooms[chatId];
+    }
+
+    getRoomByPlayerChatId(chatId) {
+        for (let roomInfo of Object.values(this._rooms)){
+            const room = roomInfo.roomObj;
+            const player = roomInfo.roomObj.getPlayerByChatId(chatId);
+            if (player){
+                return room;
+            }
+        }
     }
 
     getPlayerByChatId(chatId) {

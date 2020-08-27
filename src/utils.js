@@ -215,7 +215,7 @@ class GameRoom extends EventEmitter{
     }
 
     get currentTurnPlayerChatId() {
-        return this._players[this._currentTurn];
+        return this._players[this._currentTurn].chatId;
     }
 
     isJoined(chatId){

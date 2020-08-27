@@ -138,6 +138,15 @@ test('GameRoom: game start', () => {
   expect(player3.cards.length).toBe(room.INITIAL_CARDS);
 });
 
+test('GameRoom: giveRandomCardToPlayer()', (done) => {
+  room.once('grabbed-card', (playerChatId) => {
+    expect(playerChatId).toBe(player1.chatId);
+    expect(player1.cards.length).toBe(room.INITIAL_CARDS + 1);
+    done();
+  });
+  room.giveRandomCardToPlayer(player1.chatId);
+});
+
 test('GameRoom: updateTurn()', () => {
   room._randomSeed = 82;
   // top card is ♥2.
@@ -160,6 +169,12 @@ test('GameRoom: updateTurn()', () => {
   expect(room._currentTurn).toBe(2);
   room._currentTurn = 0;
   room.flow = 1;
+});
+
+test('GameRoom: skipRound()', () => {
+  room.skipRound();
+  expect(room._currentTurn).toBe(1);
+  room._currentTurn = 0;
 });
 
 test('GameRoom: play() handling of invalid cards', () => {

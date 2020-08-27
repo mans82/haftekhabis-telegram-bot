@@ -228,6 +228,15 @@ class GameRoom extends EventEmitter{
         return false;
     }
 
+    giveRandomCardToPlayer(playerChatId) {
+        this.getPlayerByChatId(playerChatId).giveCard(this._deck.grabCard());
+        this.emit('grabbed-card', playerChatId);
+    }
+
+    skipRound() {
+        this._updateTurn(false);
+    }
+
     startGame(){
         // check if we have appropriate number of players
         if (this._players.length < this.MIN_PLAYERS){

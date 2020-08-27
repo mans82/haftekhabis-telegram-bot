@@ -73,6 +73,16 @@ test('RoomManager: starting game', (done) => {
     roomObj.startGame();
 });
 
+test('RoomManager: grabbed-card event', (done) => {
+    roomManager.once('grabbed-card', (playerChatId, name, _roomObj) => {
+        expect(_roomObj).toBe(roomObj);
+        expect(name).toBe(roomInfo.name);
+        expect(playerChatId).toBe(player1.chatId);
+        done();
+    });
+    roomObj.giveRandomCardToPlayer(player1.chatId);
+});
+
 test('RoomManager: player-to-fine event', (done) => {
     // Rebuilding the deck, the harsh way!
     creatorPlayer._cards = [

@@ -9,7 +9,7 @@ const bot = new TelegramBot(TOKEN, {polling: true});
 const roomManager = new RoomManager();
 
 roomManager.on('room-status-changed', (name, roomObj) => {
-    let statusText = `🎮 ${name}:\n\n`
+    let statusText = `🎮 ${name}:\n\n`;
     if (!roomObj.gameStarted){
         // Prepare ready status'
         for (let player of roomObj.players){
@@ -38,7 +38,7 @@ roomManager.on('room-status-changed', (name, roomObj) => {
     } else {
         // Game ongoing
         // Prepare status text
-        statusText += `🃏 Top card is ${roomObj.topCard}\n\n`
+        statusText += `🃏 Top card is ${roomObj.topCard}\n\n`;
         for (let player of roomObj.players){
             if (player.chatId == roomObj.currentTurnPlayerChatId) {
                 if (roomObj.flow == +1) {
@@ -68,6 +68,10 @@ roomManager.on('room-status-changed', (name, roomObj) => {
                     callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
                 }]);
             }
+            inlineKeyboardMarkup.inline_keyboard.push([{
+                text: '🃏 Grab card',
+                callback_data: 'g'
+            }]);
             bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
         }
     }
@@ -75,6 +79,45 @@ roomManager.on('room-status-changed', (name, roomObj) => {
 
 roomManager.on('everyone-ready', (roomObj) => {
     roomObj.startGame();
+});
+
+roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
+    // Don't let the player grab another card!
+    const player = roomObj.getPlayerByChatId(playerChatId);
+    const chatId = player.chatId;
+    const messageId = player.messageId;
+    let statusText = `🎮 ${name}:\n\n`
+    statusText += `🃏 Top card is ${roomObj.topCard}\n\n`;
+    for (let player of roomObj.players){
+        if (player.chatId == roomObj.currentTurnPlayerChatId) {
+            if (roomObj.flow == +1) {
+                // Current player's turn. Flow downward.
+                statusText += '    🔻';
+            } else {
+                // Current player's turn. Flow upward.
+                statusText += '    🔺';
+            }
+        } else {
+            // Not current player's turn.
+            statusText += '    🔹';
+        }
+        statusText += ` ${player.name}\n`
+    }
+    const inlineKeyboardMarkup = {
+        inline_keyboard: []
+    };
+    for (let card of player.cards) {
+        // TODO print card names correctly
+        inlineKeyboardMarkup.inline_keyboard.push([{
+            text: card,
+            callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
+        }]);
+    }
+    inlineKeyboardMarkup.inline_keyboard.push([{
+        text: '⏭ Skip round',
+        callback_data: 's'
+    }]);
+    bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
 });
 
 bot.onText(/^(\/start)$/, (msg, match) => {
@@ -138,6 +181,14 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.removePlayer(chatId);
         bot.deleteMessage(chatId, messageId);
+    } else if (queryData == 'g') {
+        // grab Card
+        const room = roomManager.getRoomByPlayerChatId(chatId);
+        room.giveRandomCardToPlayer(chatId);
+    } else if (queryData == 's') {
+        // Skip round
+        const room = roomManager.getRoomByPlayerChatId(chatId);
+        room.skipRound();
     } else if (queryData == 'dummy'){
         return;
     } else {

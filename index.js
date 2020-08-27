@@ -46,6 +46,10 @@ bot.onText(/\/start (.+)/, (msg, match) => {
     const creatorChatId = match[1];
     const playerName = msg.from.first_name;
     const chatId = msg.from.id;
+    if (roomManager.getRoomByPlayerChatId(chatId)) {
+        bot.sendMessage(chatId, 'You have already joined a room!');
+        return;
+    }
     const room = roomManager.getRoomInfoByCreatorChatId(creatorChatId).roomObj;
     
     const roomInfoPromise = bot.sendMessage(chatId, 'Please wait...');

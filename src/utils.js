@@ -155,13 +155,15 @@ class GameRoom extends EventEmitter{
     }
 
     _checkEveryoneReady(){
-        for (let player of this._players){
-            if (!player.ready){
-                return;
+        if (this._players.length >= this.MIN_PLAYERS && this._players.length <= this.MAX_PLAYERS){
+            for (let player of this._players){
+                if (!player.ready){
+                    return;
+                }
             }
+            // Everyone ready!
+            this.emit('everyone-ready');
         }
-        // Everyone ready!
-        this.emit('everyone-ready');
     }
 
     addPlayer(player){

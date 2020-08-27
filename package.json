@@ -4,6 +4,7 @@
   "description": "A Telegram Bot that lets you play Hafte Khabis.",
   "main": "app.js",
   "scripts": {
+    "start" : "node index.js",
     "test": "jest --runInBand"
   },
   "author": "AmirHossein Mansoori",

@@ -212,6 +212,10 @@ class GameRoom extends EventEmitter{
         return this._deck.topCard;
     }
 
+    get currentTurnPlayerChatId() {
+        return this._players[this._currentTurn];
+    }
+
     isJoined(chatId){
         for (let player of this._players){
             if (player.chatId == chatId){

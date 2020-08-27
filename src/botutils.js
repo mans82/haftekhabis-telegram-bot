@@ -35,7 +35,7 @@ class RoomManager extends EventEmitter{
             this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('turn-changed', () => {
-            this.emit('turn-changed', roomObj);
+            this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('player-to-fine', (finerPlayer) => {
             this.emit('player-to-fine', roomObj, finerPlayer);

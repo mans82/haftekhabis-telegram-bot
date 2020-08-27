@@ -176,6 +176,17 @@ class GameRoom extends EventEmitter{
         this.emit('new-player-added', player);
     }
 
+    removePlayer(chatId){
+        for (let i = 0; i < this._players.length; i++) {
+            const player = this._players[i];
+            if (player.chatId == chatId) {
+                this._players.splice(i, 1);
+                return;
+            }
+        }
+        throw `Player with chatId ${chatId} not found`;
+    }
+
     getPlayerByChatId(chatId){
         for (let player of this._players){
             if (player.chatId == chatId){

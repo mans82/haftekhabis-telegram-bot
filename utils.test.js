@@ -86,6 +86,12 @@ test('GameRoom: basic methods', () => {
   room.addPlayer(player2);
   room.addPlayer(player3);
   expect(room.players).toEqual([player1, player2, player3]);
+  room.removePlayer('3333'); // Player 3
+  expect(room.players).toEqual([player1, player2]);
+  expect(() => {
+    room.removePlayer('4444');
+  }).toThrow();
+  room.addPlayer(player3);
   expect(room.getPlayerByChatId('1111')).toBe(player1);
   expect(room.getPlayerByChatId('2222')).toBe(player2);
   expect(room.getPlayerByChatId('3333')).toBe(player3);

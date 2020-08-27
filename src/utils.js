@@ -181,6 +181,7 @@ class GameRoom extends EventEmitter{
             const player = this._players[i];
             if (player.chatId == chatId) {
                 this._players.splice(i, 1);
+                this.emit('player-removed')
                 return;
             }
         }

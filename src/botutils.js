@@ -22,6 +22,9 @@ class RoomManager extends EventEmitter{
         roomObj.on('new-player-added', (player) => {
             this.emit('room-status-changed', name, roomObj);
         });
+        roomObj.on('player-removed', () => {
+            this.emit('room-status-changed', name, roomObj);
+        })
         roomObj.on('ready-changed', () => {
             this.emit('room-status-changed', name, roomObj);
         })

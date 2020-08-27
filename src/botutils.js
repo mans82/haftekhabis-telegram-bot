@@ -24,12 +24,15 @@ class RoomManager extends EventEmitter{
         });
         roomObj.on('player-removed', () => {
             this.emit('room-status-changed', name, roomObj);
-        })
+        });
         roomObj.on('ready-changed', () => {
             this.emit('room-status-changed', name, roomObj);
+        });
+        roomObj.on('everyone-ready', () => {
+            this.emit('everyone-ready');
         })
         roomObj.on('game-started', () => {
-            this.emit('game-started', roomObj);
+            this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('turn-changed', () => {
             this.emit('turn-changed', roomObj);

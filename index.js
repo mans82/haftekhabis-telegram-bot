@@ -28,7 +28,11 @@ function stringifyRoomStatusBeforeStart(name, roomObj) {
 
 function stringifyRoomStatusAfterStart(name, roomObj) {
     let statusText = `🎮 ${name}:\n\n`;
-    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
+    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n`;
+    if (roomObj.currentPenalty > 0) {
+        statusText += `⚠️ ${roomObj.currentPenalty} Penalty cards!\n`;
+    }
+    statusText += '\n';
     for (let player of roomObj.players){
         if (player.chatId == roomObj.currentTurnPlayerChatId) {
             if (roomObj.flow == +1) {
@@ -103,23 +107,7 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
     const player = roomObj.getPlayerByChatId(playerChatId);
     const chatId = player.chatId;
     const messageId = player.messageId;
-    let statusText = `🎮 ${name}:\n\n`
-    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
-    for (let player of roomObj.players){
-        if (player.chatId == roomObj.currentTurnPlayerChatId) {
-            if (roomObj.flow == +1) {
-                // Current player's turn. Flow downward.
-                statusText += '    🔻';
-            } else {
-                // Current player's turn. Flow upward.
-                statusText += '    🔺';
-            }
-        } else {
-            // Not current player's turn.
-            statusText += '    🔹';
-        }
-        statusText += ` ${player.name}\n`
-    }
+    const statusText = stringifyRoomStatusAfterStart(name, roomObj);
     const inlineKeyboardMarkup = {
         inline_keyboard: []
     };

@@ -82,22 +82,25 @@ roomManager.on('room-status-changed', (name, roomObj) => {
         for (let player of roomObj.players) {
             const chatId = player.chatId;
             const messageId = player.messageId;
-            const inlineKeyboardMarkup = {
-                inline_keyboard: []
-            };
-            for (let card of player.cards) {
-                // TODO print card names correctly
-                const cardText = cardToString(card);
+            if (player.rank > 0){
+                bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId});
+            } else {
+                const inlineKeyboardMarkup = {
+                    inline_keyboard: []
+                };
+                for (let card of player.cards) {
+                    const cardText = cardToString(card);
+                    inlineKeyboardMarkup.inline_keyboard.push([{
+                        text: cardText,
+                        callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
+                    }]);
+                }
                 inlineKeyboardMarkup.inline_keyboard.push([{
-                    text: cardText,
-                    callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
+                    text: '🃏 Grab card',
+                    callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 'g' : 'dummy'
                 }]);
+                bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
             }
-            inlineKeyboardMarkup.inline_keyboard.push([{
-                text: '🃏 Grab card',
-                callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 'g' : 'dummy'
-            }]);
-            bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
         }
     }
 });

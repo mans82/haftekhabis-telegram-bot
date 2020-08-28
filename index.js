@@ -8,6 +8,16 @@ const TOKEN = fs.readFileSync('token.txt');
 const bot = new TelegramBot(TOKEN, {polling: true});
 const roomManager = new RoomManager();
 
+function cardToString(card) {
+    if (card.endsWith('0')) {
+        return card[0] + '10';
+    } else if (card.endsWith('1')) {
+        return card[0] + 'A';
+    } else {
+        return card;
+    }
+}
+
 roomManager.on('room-status-changed', (name, roomObj) => {
     let statusText = `🎮 ${name}:\n\n`;
     if (!roomObj.gameStarted){
@@ -63,8 +73,9 @@ roomManager.on('room-status-changed', (name, roomObj) => {
             };
             for (let card of player.cards) {
                 // TODO print card names correctly
+                const cardText = cardToString(card);
                 inlineKeyboardMarkup.inline_keyboard.push([{
-                    text: card,
+                    text: cardText,
                     callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
                 }]);
             }
@@ -87,7 +98,7 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
     const chatId = player.chatId;
     const messageId = player.messageId;
     let statusText = `🎮 ${name}:\n\n`
-    statusText += `🃏 Top card is ${roomObj.topCard}\n\n`;
+    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
     for (let player of roomObj.players){
         if (player.chatId == roomObj.currentTurnPlayerChatId) {
             if (roomObj.flow == +1) {
@@ -107,9 +118,9 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
         inline_keyboard: []
     };
     for (let card of player.cards) {
-        // TODO print card names correctly
+        const cardText = cardToString(card);
         inlineKeyboardMarkup.inline_keyboard.push([{
-            text: card,
+            text: cardText,
             callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? card : 'dummy'
         }]);
     }
@@ -223,6 +234,7 @@ bot.on('callback_query', (query) => {
             player.ready = true;
         }
     } else if (queryData == 'l') {
+        // Leave
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.removePlayer(chatId);
         bot.deleteMessage(chatId, messageId);

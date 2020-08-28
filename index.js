@@ -48,7 +48,7 @@ roomManager.on('room-status-changed', (name, roomObj) => {
     } else {
         // Game ongoing
         // Prepare status text
-        statusText += `🃏 Top card is ${roomObj.topCard}\n\n`;
+        statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
         for (let player of roomObj.players){
             if (player.chatId == roomObj.currentTurnPlayerChatId) {
                 if (roomObj.flow == +1) {

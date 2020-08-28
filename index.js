@@ -44,7 +44,11 @@ function stringifyRoomStatusAfterStart(name, roomObj) {
             }
         } else {
             // Not current player's turn.
-            statusText += '    🔹';
+            if (player.rank > 0) {
+                statusText += '    🔸';
+            } else {
+                statusText += '    🔹';
+            }
         }
         statusText += ` ${player.name}\n`
     }

@@ -335,13 +335,7 @@ class GameRoom extends EventEmitter{
 
         if (this.currentPenalty > 0){
             if (card[1] != '7'){
-                // This player should receive fines!
-                for (let i = 0; i < this.currentPenalty; i++){
-                    currentTurnPlayer.giveCard(this._deck.grabCard())
-                }
-                this.currentPenalty = 0;
-                this._updateTurn(shouldHop);
-                return;
+                throw 'Should play a 7 card';
             }
         }
 

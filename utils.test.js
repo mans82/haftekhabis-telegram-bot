@@ -171,10 +171,8 @@ test('GameRoom: updateTurn()', () => {
   room.flow = 1;
 });
 
-test('GameRoom: skipRound()', () => {
-  room.skipRound();
-  expect(room._currentTurn).toBe(1);
-  room._currentTurn = 0;
+test('GameRoom: currentTurnPlayerChatId getter', () => {
+  expect(room.currentTurnPlayerChatId).toBe(player1.chatId);
 });
 
 test('GameRoom: play() handling of invalid cards', () => {
@@ -232,12 +230,24 @@ test('GameRoom: turn-changed signal', (done) => {
   room.play('♥7'); // player1 plays
 });
 
-test('GameRoom: playing cards that does not require emitting signals', () => {
-  room.play('♥3'); // player2 plays
+test('GameRoom: play a non 7 card after playing a 7 card', () => {
+  player2.giveCard('♥1');
+  expect(() => {
+    room.play('♥1')
+  }).toThrow();
+  player2.takeCard('♥1');
+});
+
+test('GameRoom: skipRound()', () => {
+  room.skipRound(); // player2 plays (skips)
   expect(player2.cards.length).toBe(7 + room.SEVEN_CARD_PENALTY);
   expect(room.currentPenalty).toBe(0);
   expect(room._currentTurn).toBe(2);
   expect(room._deck.topCard).toBe('♥7');
+});
+
+
+test('GameRoom: playing cards that does not require emitting signals', () => {
   room.play('♥1'); // player3 plays
   expect(player3._cards.length).toBe(1);
   expect(room._currentTurn).toBe(1);

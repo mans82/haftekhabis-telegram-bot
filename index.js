@@ -133,7 +133,7 @@ roomManager.on('player-to-fine', (roomObj, card, finerPlayer) => {
         inline_keyboard: []
     };
     for (let player of players) {
-        if (player == finerPlayer) {
+        if ((player == finerPlayer) || (player.rank > 0)) {
             continue;
         }
         const finedPlayerChatId = player.chatId;

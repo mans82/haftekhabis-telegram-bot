@@ -234,6 +234,14 @@ class GameRoom extends EventEmitter{
     }
 
     skipRound() {
+        if (this.currentPenalty > 0) {
+            // give penalty to the currently playing player
+            const player = this._players[this._currentTurn];
+            for (let i = 0; i < this.currentPenalty; i++) {
+                player.giveCard(this._deck.grabCard());
+            }
+            this._currentTurn = 0;
+        }
         this._updateTurn(false);
     }
 

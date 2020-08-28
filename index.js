@@ -18,52 +18,58 @@ function cardToString(card) {
     }
 }
 
-roomManager.on('room-status-changed', (name, roomObj) => {
+function stringifyRoomStatusBeforeStart(name, roomObj) {
     let statusText = `🎮 ${name}:\n\n`;
+    for (let player of roomObj.players){
+        statusText += `    ${player.ready ? '🔥' : '💤'} ${player.name}\n`;
+    }
+    return statusText;
+}
+
+function stringifyRoomStatusAfterStart(name, roomObj) {
+    let statusText = `🎮 ${name}:\n\n`;
+    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
+    for (let player of roomObj.players){
+        if (player.chatId == roomObj.currentTurnPlayerChatId) {
+            if (roomObj.flow == +1) {
+                // Current player's turn. Flow downward.
+                statusText += '    🔻';
+            } else {
+                // Current player's turn. Flow upward.
+                statusText += '    🔺';
+            }
+        } else {
+            // Not current player's turn.
+            statusText += '    🔹';
+        }
+        statusText += ` ${player.name}\n`
+    }
+    return statusText;
+}
+
+
+roomManager.on('room-status-changed', (name, roomObj) => {
     if (!roomObj.gameStarted){
         // Prepare ready status'
-        for (let player of roomObj.players){
-            statusText += `    ${player.ready ? '🔥' : '💤'} ${player.name}\n`;
-        }
+        let statusText = stringifyRoomStatusBeforeStart(name, roomObj);
         for (let player of roomObj.players){
             const chatId = player.chatId;
             const messageId = player.messageId;
-            const inlineKeyboardMarkup = {
-                inline_keyboard:
-                    [
-                        [
-                            {
-                                text: player.ready ? '💤 Not ready!' : '🔥 Ready!',
-                                callback_data: 'r'
-                            },
-                            {
-                                text: '🚪 Leave',
-                                callback_data: 'l'
-                            }
-                        ]
-                    ]
-            }
+            const inlineKeyboardMarkup = { inline_keyboard: [[
+                {
+                    text: player.ready ? '💤 Not ready!' : '🔥 Ready!',
+                    callback_data: 'r'
+                },
+                {
+                    text: '🚪 Leave',
+                    callback_data: 'l'
+                }
+            ]]};
             bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
         } 
     } else {
         // Game ongoing
-        // Prepare status text
-        statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n\n`;
-        for (let player of roomObj.players){
-            if (player.chatId == roomObj.currentTurnPlayerChatId) {
-                if (roomObj.flow == +1) {
-                    // Current player's turn. Flow downward.
-                    statusText += '    🔻';
-                } else {
-                    // Current player's turn. Flow upward.
-                    statusText += '    🔺';
-                }
-            } else {
-                // Not current player's turn.
-                statusText += '    🔹';
-            }
-            statusText += ` ${player.name}\n`
-        }
+        const statusText = stringifyRoomStatusAfterStart(name, roomObj);
         // Now send status text to everyone
         for (let player of roomObj.players) {
             const chatId = player.chatId;

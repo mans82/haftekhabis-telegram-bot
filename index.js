@@ -70,7 +70,7 @@ roomManager.on('room-status-changed', (name, roomObj) => {
             }
             inlineKeyboardMarkup.inline_keyboard.push([{
                 text: '🃏 Grab card',
-                callback_data: 'g'
+                callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 'g' : 'dummy'
             }]);
             bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
         }
@@ -115,7 +115,7 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
     }
     inlineKeyboardMarkup.inline_keyboard.push([{
         text: '⏭ Skip round',
-        callback_data: 's'
+        callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 's' : 'dummy'
     }]);
     bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
 });

@@ -44,7 +44,7 @@ class RoomManager extends EventEmitter{
             this.emit('player-to-fine', roomObj, card, finerPlayer);
         });
         roomObj.on('game-finished', () => {
-            this.emit('game-finished', roomObj);
+            this.emit('game-finished', name, roomObj);
         });
         roomObj.addPlayer(creatorPlayer);
         this._rooms[creatorChatId] = newRoom;

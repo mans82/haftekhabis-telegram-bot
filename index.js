@@ -140,6 +140,24 @@ roomManager.on('player-to-fine', (roomObj, card, finerPlayer) => {
     bot.editMessageText('Select a player to fine:', {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
 });
 
+roomManager.on('game-finished', (name, roomObj) => {
+    let statusText = `🎮 ${name}:\n✅ Game finished!\n\n`;
+    for (let player of roomObj.players) {
+        const topThreeRanks = ['🥇', '🥈', '🥉'];
+        if (player.rank <= 3) {
+            statusText += `    🔹${topThreeRanks[player.rank - 1]} ${player.name}\n`;
+        } else {
+            statusText += `    🔹 (#${player.rank}) ${player.name}\n`;
+        }
+    }
+    // Send game status to all players
+    for (let player of roomObj.players) {
+        const chatId = player.chatId;
+        const messageId = player.messageId;
+        bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId});
+    }
+});
+
 bot.onText(/^(\/start)$/, (msg, match) => {
     // Send welcome message
     const chatId = msg.chat.id;

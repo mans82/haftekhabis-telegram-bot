@@ -127,7 +127,8 @@ test('RoomManager: changing turns', (done) => {
 });
 
 test('RoomManager: game-finished event', (done) => {
-    roomManager.once('game-finished', (_roomObj) => {
+    roomManager.once('game-finished', (name, _roomObj) => {
+        expect(name).toBe(roomInfo.name);
         expect(_roomObj).toBe(roomObj);
         done();
     });

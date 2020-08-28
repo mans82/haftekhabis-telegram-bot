@@ -240,7 +240,7 @@ class GameRoom extends EventEmitter{
             for (let i = 0; i < this.currentPenalty; i++) {
                 player.giveCard(this._deck.grabCard());
             }
-            this._currentTurn = 0;
+            this.currentPenalty = 0;
         }
         this._updateTurn(false);
     }

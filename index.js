@@ -214,8 +214,7 @@ bot.on('callback_query', (query) => {
         const fineCard = parsedQueryData[2];
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.play(fineCard, finedPlayerChatId);
-    }
-    if (queryData == 'r') {
+    } else if (queryData == 'r') {
         // Ready state should be changed
         const player = roomManager.getPlayerByChatId(chatId);
         if (player.ready) {

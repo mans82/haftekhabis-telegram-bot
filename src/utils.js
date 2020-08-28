@@ -278,14 +278,17 @@ class GameRoom extends EventEmitter{
     _updateTurn(hop = false){
         let currentTurn;
         if (hop){
-            currentTurn = (this._currentTurn + 2 * this.flow);
+            // currentTurn = (this._currentTurn + 2 * this.flow);
+            for (let i = 0; i < 2; i++){
+                this._updateTurn(false);
+            }
         }else{
             currentTurn = (this._currentTurn + this.flow);
+            while (currentTurn < 0){
+                currentTurn += this._players.length;
+            }
+            this._currentTurn = currentTurn % this._players.length;
         }
-        while (currentTurn < 0){
-            currentTurn += this._players.length;
-        }
-        this._currentTurn = currentTurn % this._players.length;
 
         if (this._players[this._currentTurn].rank > 0){
             // This player has finished the round. go for the next

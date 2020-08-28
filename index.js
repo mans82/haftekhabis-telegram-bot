@@ -214,7 +214,6 @@ bot.onText(/\/new\ ?(.*)/, (msg, match) => {
 });
 
 bot.on('callback_query', (query) => {
-    bot.answerCallbackQuery({callback_query_id: query.id})
     const queryData = query.data;
     const chatId = query.from.id;
     const messageId = query.message.message_id;
@@ -224,7 +223,10 @@ bot.on('callback_query', (query) => {
         const finedPlayerChatId = parsedQueryData[1];
         const fineCard = parsedQueryData[2];
         const room = roomManager.getRoomByPlayerChatId(chatId);
+        const finedPlayerName = room.getPlayerByChatId(finedPlayerChatId).name;
         room.play(fineCard, finedPlayerChatId);
+        bot.answerCallbackQuery({callback_query_id: query.id, text: `You fined ${finedPlayerName}`});
+        return;
     } else if (queryData == 'r') {
         // Ready state should be changed
         const player = roomManager.getPlayerByChatId(chatId);
@@ -238,6 +240,8 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.removePlayer(chatId);
         bot.deleteMessage(chatId, messageId);
+        bot.answerCallbackQuery({callback_query_id: query.id, text: `You left the room.`});
+        return;
     } else if (queryData == 'g') {
         // grab Card
         const room = roomManager.getRoomByPlayerChatId(chatId);
@@ -247,11 +251,15 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.skipRound();
     } else if (queryData == 'dummy'){
+        bot.answerCallbackQuery({callback_query_id: query.id, text: 'Not your turn!'});
         return;
     } else {
         // its a card
         const card = queryData;
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.play(card);
+        bot.answerCallbackQuery({callback_query_id: query.id, text: `You played ${cardToString(card)}.`});
+        return;
     }
+    bot.answerCallbackQuery({callback_query_id: query.id})
 });

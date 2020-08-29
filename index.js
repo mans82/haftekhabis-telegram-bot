@@ -194,6 +194,11 @@ bot.onText(/\/start (.+)/, (msg, match) => {
         return;
     }
     const room = roomInfo.roomObj;
+
+    if (room.players.length >= room.MAX_PLAYERS) {
+        bot.sendMessage(chatId, dialogues.get('room full'));
+        return;
+    }
     
     const roomInfoPromise = bot.sendMessage(chatId, dialogues.get('please wait'));
     roomInfoPromise.then((roomInfoMessage) => {

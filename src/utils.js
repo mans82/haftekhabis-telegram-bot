@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 const constants = {
     CARDNUMBERS: '1234567890JKQ',
     CARDSUITS: '♦♥♠♣',
-    randomSeed: 82
+    randomSeed: new Date().getTime()
 }
 
 function isValidCard(card){
@@ -16,7 +16,8 @@ function isValidCard(card){
 }
 
 function random(){
-    const randomSine = Math.sin(constants.randomSeed++) * 1e4;
+    const randomSine = Math.sin(constants.randomSeed) * 1e4;
+    constants.randomSeed += randomSine;
     return randomSine - Math.floor(randomSine);
 }
 

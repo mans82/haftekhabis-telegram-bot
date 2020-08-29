@@ -1,5 +1,7 @@
 const utils = require('./src/utils');
 
+utils._constants.randomSeed = 82;
+
 test('Basic module functions', () => {
   expect(utils._isValidCard(22)).toBe(false);
   expect(utils._isValidCard('js')).toBe(false);
@@ -11,10 +13,7 @@ test('Basic module functions', () => {
 
 
 test('CardDeck class', () => {
-  utils._constants.randomSeed = 82;
-  expect(utils._constants.randomSeed).toBe(82);
   const deck = new utils.CardDeck();
-  expect(utils._constants.randomSeed).toBe(83);
   expect(deck._cards.length).toBe(52);
   expect(deck._cards.slice().sort()).toEqual([
       '♦1', '♥1', '♠1', '♣1', '♦2', '♥2', '♠2',
@@ -26,12 +25,12 @@ test('CardDeck class', () => {
       '♠J', '♣J', '♦K', '♥K', '♠K', '♣K', '♦Q',
       '♥Q', '♠Q', '♣Q'
   ].sort());
-  expect(deck.topCard).toBe('♥2');
+  expect(deck.topCard).toBe('♠9');
   const copyOfCards = deck._cards.slice();
   const grabbedCard = deck.grabCard();
   expect(utils._isValidCard(grabbedCard)).toBe(true);
   expect(deck.topCard).not.toBe(grabbedCard);
-  expect(deck.topCard).toBe(copyOfCards[14]);
+  expect(deck.topCard).toBe(copyOfCards[34]);
   expect(grabbedCard).not.toBe(copyOfCards[14]);
   expect(deck._cards.length).toBe(51);
   expect(() => {
@@ -66,14 +65,15 @@ test('Player class', () => {
   }).toThrow();
   player.giveCard('♥2');
   player.giveCard('♥4');
-  utils._constants.randomSeed = 82;
+  randomSeed = 82;
   const randomCard = player.takeCardRandom();
   expect(utils._isValidCard(randomCard)).toBe(true);
-  expect(randomCard).toBe('♥2');
+  expect(randomCard).toBe('♥4');
   expect(player._cards.length).toBe(1);
   expect(player.hasNoCard()).toBe(false);
 });
 
+randomSeed = 82;
 const room = new utils.GameRoom();
 const player1 = new utils.Player('Player1', '1111', '1001');
 const player2 = new utils.Player('Player2', '2222', '2002');
@@ -148,7 +148,7 @@ test('GameRoom: giveRandomCardToPlayer()', (done) => {
 });
 
 test('GameRoom: updateTurn()', () => {
-  room._randomSeed = 82;
+  // utils._constants.randomSeed = 82;
   // top card is ♥2.
   expect(room._isCompatible('♥2')).toBe(false);
   expect(room._isCompatible('♥J')).toBe(true);

@@ -270,8 +270,12 @@ bot.on('callback_query', (query) => {
         // its a card
         const card = queryData;
         const room = roomManager.getRoomByPlayerChatId(chatId);
-        room.play(card);
-        bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('you played card', cardToString(card))});
+        try{
+            room.play(card);
+            bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('you played card', cardToString(card))});
+        } catch {
+            bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('illegal card')});
+        }
         return;
     }
     bot.answerCallbackQuery({callback_query_id: query.id})

@@ -20,5 +20,6 @@
     "not ready": ["Not ready!"],
     "leave": ["Leave"],
     "new room": ["7Khabis"],
-    "illegal card": ["Illegal card!"]
+    "illegal card": ["Illegal card!"],
+    "room full": ["Room is full!"]
 }

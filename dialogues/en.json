@@ -19,5 +19,6 @@
     "ready": ["Ready!"],
     "not ready": ["Not ready!"],
     "leave": ["Leave"],
-    "new room": ["7Khabis"]
+    "new room": ["7Khabis"],
+    "illegal card": ["Illegal card!"]
 }

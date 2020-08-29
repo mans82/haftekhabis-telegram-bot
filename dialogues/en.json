@@ -1,0 +1,23 @@
+{
+    "welcome": ["Welcome!"],
+    "top card is": ["Top card is %s"],
+    "penalty cards": ["%s Penalty cards!"],
+    "grab card": ["Grab card"],
+    "skip round": ["Skip round"],
+    "select a player to fine": ["Select a player to fine:"],
+    "game finished" : ["Game finished!"],
+    "game finished top three rank": ["%s %s"],
+    "game finished other players": ["(#%s) %s", ""],
+    "already joined": ["You have already joined a room!"],
+    "invalid link": ["Invalid link. The room does not exist!"],
+    "please wait": ["Please wait..."],
+    "room created": ["Room created. Share this link to others to join:", "t.me/haftekhabisbot?start=%s"],
+    "you fined": ["You fined %s."],
+    "you left": ["You left the room."],
+    "not your turn": ["Not your turn!"],
+    "you played card": ["You played %s."],
+    "ready": ["Ready!"],
+    "not ready": ["Not ready!"],
+    "leave": ["Leave"],
+    "new room": ["7Khabis"]
+}

@@ -1,4 +1,6 @@
 const utils = require('./utils');
+const fs = require('fs');
+const { parse } = require('path');
 const EventEmitter = require('events').EventEmitter;
 
 class RoomManager extends EventEmitter{
@@ -74,4 +76,70 @@ class RoomManager extends EventEmitter{
     }
 }
 
+class DialogueManager {
+    constructor(sourceDirPath = 'dialogues/', dialogueFilePath) {
+        this._srcDir = sourceDirPath;
+        if (!sourceDirPath.endsWith('/')) {
+            this._srcDir += '/';
+        }
+        this._cacheInterval = 5;
+        this._dialogueFilePath = dialogueFilePath;
+        this._dialogues = undefined;
+        this._lastTimeCached = 0;
+        this._cacheDialogues(false);
+    }
+
+    _cacheDialogues(async = true) {
+        const parseData = (data) => {
+            const parsedData = JSON.parse(data.toString());
+            const result = {};
+            for (let key in parsedData) {
+                const lineArray = parsedData[key];
+                let value = '';
+                for (let line of lineArray) {
+                    value += line + '\n';
+                }
+                result[key] = value.trim();
+            }
+            this._lastTimeCached = new Date().getTime();
+            this._dialogues = result;
+        }
+        if (async) {
+            fs.readFile(this._srcDir + this._dialogueFilePath, (err, data) => {
+               parseData(data); 
+            });
+        } else {
+            parseData(fs.readFileSync(this._srcDir + this._dialogueFilePath));
+        }
+        
+    }
+
+    loadFile(pathToFile) {
+        this._dialogueFilePath = pathToFile;
+        this._cacheDialogues(false);
+    }
+
+    get(key, ...formatStrings) {
+        const currentTimestamp = new Date().getTime();
+        if (currentTimestamp > this._lastTimeCached + this._cacheInterval) {
+            this._cacheDialogues();
+        }
+
+        const rawDialogue = this._dialogues[key].split('%s');
+        let finalDialogue = '';
+        let rawDialogueIndex = 0;
+        let formatStringsIndex = 0;
+        while (rawDialogueIndex < rawDialogue.length && formatStringsIndex < formatStrings.length) {
+            finalDialogue += rawDialogue[rawDialogueIndex++] + formatStrings[formatStringsIndex++];
+        }
+        while (rawDialogueIndex < rawDialogue.length) {
+            finalDialogue += rawDialogue[rawDialogueIndex++];
+        }
+        
+        return finalDialogue;
+    }
+
+}
+
 module.exports.RoomManager = RoomManager;
+module.exports.DialogueManager = DialogueManager;

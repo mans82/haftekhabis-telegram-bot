@@ -1,7 +1,7 @@
 const utils = require('./src/utils');
-const RoomManager = require('./src/botutils').RoomManager;
+const botutils = require('./src/botutils');
 
-const roomManager = new RoomManager();
+const roomManager = new botutils.RoomManager();
 const creatorChatId = 10;
 const creatorPlayer = new utils.Player('Creator', creatorChatId, 100);
 const player1 = new utils.Player('Player 1', 20, 200);
@@ -134,4 +134,18 @@ test('RoomManager: game-finished event', (done) => {
     });
     roomObj.play('♦8'); // Player 1 plays
     roomObj.play('♥8'); // Player 1 plays. Game finishes.
+});
+
+test('DialogueManager class', (done) => {
+    const dialogueManager = new botutils.DialogueManager('dialogues', 'test.json');
+    dialogueManager._cacheInterval = 2;
+    expect(dialogueManager.get('singleLine')).toBe('Hey! This is a single line');
+    expect(dialogueManager.get('multiLine')).toBe('This is the first line.\nThis is the second line.');
+    dialogueManager.loadFile('test2.json');
+    expect(dialogueManager.get('formatted', 'world', 'you')).toBe('Hello world, you!');
+    expect(dialogueManager.get('changedDialogue')).toBe('Oh! This has changed!');
+    setTimeout(() => {
+        expect(dialogueManager.get('changedDialogue')).toBe('Oh! This has changed!');
+        done();
+    }, 2100);
 });

@@ -1,12 +1,13 @@
-const RoomManager = require('./src/botutils').RoomManager;
 const utils = require('./src/utils');
+const botutils = require('./src/botutils');
 const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 
 const TOKEN = fs.readFileSync('token.txt');
 
 const bot = new TelegramBot(TOKEN, {polling: true});
-const roomManager = new RoomManager();
+const roomManager = new botutils.RoomManager();
+const dialogues = new botutils.DialogueManager('dialogues/', 'en.json');
 
 function cardToString(card) {
     if (card.endsWith('0')) {
@@ -28,9 +29,11 @@ function stringifyRoomStatusBeforeStart(name, roomObj) {
 
 function stringifyRoomStatusAfterStart(name, roomObj) {
     let statusText = `🎮 ${name}:\n\n`;
-    statusText += `🃏 Top card is ${cardToString(roomObj.topCard)}\n`;
+    statusText += '🃏 ' + dialogues.get('top card is', cardToString(roomObj.topCard));
+    statusText += "\n";
     if (roomObj.currentPenalty > 0) {
-        statusText += `⚠️ ${roomObj.currentPenalty} Penalty cards!\n`;
+        statusText += '⚠️ ' + dialogues.get('penalty cards', roomObj.currentPenalty);
+        statusText += "\n";
     }
     statusText += '\n';
     for (let player of roomObj.players){
@@ -96,7 +99,7 @@ roomManager.on('room-status-changed', (name, roomObj) => {
                     }]);
                 }
                 inlineKeyboardMarkup.inline_keyboard.push([{
-                    text: '🃏 Grab card',
+                    text: '🃏 ' + dialogues.get('grab card'),
                     callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 'g' : 'dummy'
                 }]);
                 bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
@@ -126,7 +129,7 @@ roomManager.on('grabbed-card', (playerChatId, name, roomObj) => {
         }]);
     }
     inlineKeyboardMarkup.inline_keyboard.push([{
-        text: '⏭ Skip round',
+        text: '⏭ ' + dialogues.get('skip round'),
         callback_data: player.chatId == roomObj.currentTurnPlayerChatId ? 's' : 'dummy'
     }]);
     bot.editMessageText(statusText, {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
@@ -149,17 +152,17 @@ roomManager.on('player-to-fine', (roomObj, card, finerPlayer) => {
             callback_data: `f/${finedPlayerChatId}/${card}`
         }]);
     }
-    bot.editMessageText('Select a player to fine:', {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
+    bot.editMessageText(dialogues.get('select a player to fine'), {chat_id: chatId, message_id: messageId, reply_markup: inlineKeyboardMarkup});
 });
 
 roomManager.on('game-finished', (name, roomObj) => {
-    let statusText = `🎮 ${name}:\n✅ Game finished!\n\n`;
+    let statusText = `🎮 ${name}:\n✅ ${dialogues.get('game finished')}\n\n`
     for (let player of roomObj.players) {
         const topThreeRanks = ['🥇', '🥈', '🥉'];
         if (player.rank <= 3) {
-            statusText += `    🔹${topThreeRanks[player.rank - 1]} ${player.name}\n`;
+            statusText += '    🔹' + dialogues.get('game finished top three rank', topThreeRanks[player.rank - 1], player.name) + '\n';
         } else {
-            statusText += `    🔹 (#${player.rank}) ${player.name}\n`;
+            statusText += '    🔹' + dialogues.get('game finished other players', player.rank, player.name) + '\n';
         }
     }
     // Send game status to all players
@@ -173,7 +176,7 @@ roomManager.on('game-finished', (name, roomObj) => {
 bot.onText(/^(\/start)$/, (msg, match) => {
     // Send welcome message
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, 'Welcome!');
+    bot.sendMessage(chatId, dialogues.get('welcome'));
 });
 
 bot.onText(/\/start (.+)/, (msg, match) => {
@@ -182,17 +185,17 @@ bot.onText(/\/start (.+)/, (msg, match) => {
     const playerName = msg.from.first_name;
     const chatId = msg.from.id;
     if (roomManager.getRoomByPlayerChatId(chatId)) {
-        bot.sendMessage(chatId, 'You have already joined a room!');
+        bot.sendMessage(chatId, dialogues.get('already joined'));
         return;
     }
     const roomInfo = roomManager.getRoomInfoByCreatorChatId(creatorChatId);
     if (!roomInfo) {
-        bot.sendMessage(chatId, 'Invalid link. The room does not exist!');
+        bot.sendMessage(chatId, dialogues.get('invalid link'));
         return;
     }
     const room = roomInfo.roomObj;
     
-    const roomInfoPromise = bot.sendMessage(chatId, 'Please wait...');
+    const roomInfoPromise = bot.sendMessage(chatId, dialogues.get('please wait'));
     roomInfoPromise.then((roomInfoMessage) => {
         const messageId = roomInfoMessage.message_id;
         room.addPlayer(new utils.Player(playerName, chatId, messageId));
@@ -203,15 +206,14 @@ bot.onText(/\/start (.+)/, (msg, match) => {
 bot.onText(/\/new\ ?(.*)/, (msg, match) => {
     const chatId = msg.chat.id;
     if (roomManager.getPlayerByChatId(chatId)){
-        bot.sendMessage(chatId, 'You have already joined a room!');
+        bot.sendMessage(chatId, dialogues.get('already joined'));
         return;
     }
-    // const messageId = msg.message_id;
     const playerName = msg.chat.first_name;
     const roomName = match[1] == '' ? undefined : match[1];
-    const creationMessage = bot.sendMessage(chatId, `Room created. Share this link to others to join:\nt.me/haftekhabisbot?start=${chatId}`)
+    const creationMessage = bot.sendMessage(chatId, dialogues.get('room created', chatId));
     creationMessage.then((creationMessage) => {
-        const roomInfoPromise = bot.sendMessage(chatId, 'Please wait...');
+        const roomInfoPromise = bot.sendMessage(chatId, dialogues.get('please wait'));
         roomInfoPromise.then((roomInfoMessage) => {
             const messageId = roomInfoMessage.message_id;
             roomManager.createRoom(new utils.Player(playerName, chatId, messageId), roomName);
@@ -231,7 +233,7 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         const finedPlayerName = room.getPlayerByChatId(finedPlayerChatId).name;
         room.play(fineCard, finedPlayerChatId);
-        bot.answerCallbackQuery({callback_query_id: query.id, text: `You fined ${finedPlayerName}`});
+        bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('you fined', finedPlayerName)});
         return;
     } else if (queryData == 'r') {
         // Ready state should be changed
@@ -246,7 +248,7 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.removePlayer(chatId);
         bot.deleteMessage(chatId, messageId);
-        bot.answerCallbackQuery({callback_query_id: query.id, text: `You left the room.`});
+        bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('you left')});
         return;
     } else if (queryData == 'g') {
         // grab Card
@@ -257,14 +259,14 @@ bot.on('callback_query', (query) => {
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.skipRound();
     } else if (queryData == 'dummy'){
-        bot.answerCallbackQuery({callback_query_id: query.id, text: 'Not your turn!'});
+        bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('not your turn')});
         return;
     } else {
         // its a card
         const card = queryData;
         const room = roomManager.getRoomByPlayerChatId(chatId);
         room.play(card);
-        bot.answerCallbackQuery({callback_query_id: query.id, text: `You played ${cardToString(card)}.`});
+        bot.answerCallbackQuery({callback_query_id: query.id, text: dialogues.get('you played card', cardToString(card))});
         return;
     }
     bot.answerCallbackQuery({callback_query_id: query.id})

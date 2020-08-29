@@ -99,7 +99,7 @@ class DialogueManager {
                 for (let line of lineArray) {
                     value += line + '\n';
                 }
-                result[key] = value.trim();
+                result[key] = value.substring(0, value.length - 1); // remove the tailing '\n'.
             }
             this._lastTimeCached = new Date().getTime();
             this._dialogues = result;

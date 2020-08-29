@@ -25,7 +25,11 @@ class RoomManager extends EventEmitter{
             this.emit('room-status-changed', name, roomObj);
         });
         roomObj.on('player-removed', () => {
-            this.emit('room-status-changed', name, roomObj);
+            if (roomObj.players.length == 0){
+                delete this._rooms[creatorChatId];
+            } else {
+                this.emit('room-status-changed', name, roomObj);
+            }
         });
         roomObj.on('ready-changed', () => {
             this.emit('room-status-changed', name, roomObj);
@@ -47,6 +51,7 @@ class RoomManager extends EventEmitter{
         });
         roomObj.on('game-finished', () => {
             this.emit('game-finished', name, roomObj);
+            delete this._rooms[creatorChatId];
         });
         roomObj.addPlayer(creatorPlayer);
         this._rooms[creatorChatId] = newRoom;

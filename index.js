@@ -185,7 +185,12 @@ bot.onText(/\/start (.+)/, (msg, match) => {
         bot.sendMessage(chatId, 'You have already joined a room!');
         return;
     }
-    const room = roomManager.getRoomInfoByCreatorChatId(creatorChatId).roomObj;
+    const roomInfo = roomManager.getRoomInfoByCreatorChatId(creatorChatId);
+    if (!roomInfo) {
+        bot.sendMessage(chatId, 'Invalid link. The room does not exist!');
+        return;
+    }
+    const room = roomInfo.roomObj;
     
     const roomInfoPromise = bot.sendMessage(chatId, 'Please wait...');
     roomInfoPromise.then((roomInfoMessage) => {

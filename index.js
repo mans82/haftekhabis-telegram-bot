@@ -7,7 +7,7 @@ const TOKEN = fs.readFileSync('token.txt');
 
 const bot = new TelegramBot(TOKEN, {polling: true});
 const roomManager = new botutils.RoomManager();
-const dialogues = new botutils.DialogueManager('dialogues/', 'en.json');
+const dialogues = new botutils.DialogueManager('dialogues/', 'fa.json');
 
 function cardToString(card) {
     if (card.endsWith('0')) {
@@ -68,11 +68,11 @@ roomManager.on('room-status-changed', (name, roomObj) => {
             const messageId = player.messageId;
             const inlineKeyboardMarkup = { inline_keyboard: [[
                 {
-                    text: player.ready ? '💤 Not ready!' : '🔥 Ready!',
+                    text: player.ready ? '💤 ' + dialogues.get('not ready'): '🔥 ' + dialogues.get('ready'),
                     callback_data: 'r'
                 },
                 {
-                    text: '🚪 Leave',
+                    text: '🚪 ' + dialogues.get('leave'),
                     callback_data: 'l'
                 }
             ]]};
@@ -203,6 +203,11 @@ bot.onText(/\/start (.+)/, (msg, match) => {
 
 });
 
+bot.onText(/^(\/help)$/, (msg, match) => {
+    const chatId = msg.from.id;
+    bot.sendMessage(chatId, dialogues.get('help message'));
+});
+
 bot.onText(/\/new\ ?(.*)/, (msg, match) => {
     const chatId = msg.chat.id;
     if (roomManager.getPlayerByChatId(chatId)){
@@ -210,7 +215,7 @@ bot.onText(/\/new\ ?(.*)/, (msg, match) => {
         return;
     }
     const playerName = msg.chat.first_name;
-    const roomName = match[1] == '' ? undefined : match[1];
+    const roomName = match[1] == '' ? dialogues.get('new room') : match[1];
     const creationMessage = bot.sendMessage(chatId, dialogues.get('room created', chatId));
     creationMessage.then((creationMessage) => {
         const roomInfoPromise = bot.sendMessage(chatId, dialogues.get('please wait'));

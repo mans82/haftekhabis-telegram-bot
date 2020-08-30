@@ -199,6 +199,10 @@ bot.onText(/\/start (.+)/, (msg, match) => {
         bot.sendMessage(chatId, dialogues.get('room full'));
         return;
     }
+    if (room.gameStarted) {
+        bot.sendMessage(chatId, dialogues.get('game started'));
+        return;
+    }
     
     const roomInfoPromise = bot.sendMessage(chatId, dialogues.get('please wait'));
     roomInfoPromise.then((roomInfoMessage) => {

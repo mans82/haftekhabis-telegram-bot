@@ -21,5 +21,6 @@
     "leave": ["Leave"],
     "new room": ["7Khabis"],
     "illegal card": ["Illegal card!"],
-    "room full": ["Room is full!"]
+    "room full": ["Room is full!"],
+    "game started": ["Game has already started!"]
 }
